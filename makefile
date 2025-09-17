@@ -28,7 +28,7 @@ clean:
 	rm -rf build bin compile_commands.json test_build
 
 format:
-	@( find src/ -iname "*.h" -o -iname "*.c"; find include/ -iname "*.h" -o -iname "*.c"; find tests/ -iname "*.h" -o -iname "*.c"; ) | xargs clang-format -i
+	@find src/ -iname "*.h" -o -iname "*.c" | xargs clang-format -i
 
 run: all
 	@./$(BIN)
