@@ -1,15 +1,18 @@
 #include <locale.h>
 #include <ncurses.h>
 #include <stdlib.h>
+#include <string.h>
+#include <time.h>
 #include <unistd.h>
 
+#include "net.h"
 #include "pong.h"
 
 void loop(struct Game *game, enum PlayerAction your_action,
           enum PlayerAction opponend_action);
 struct Game *init_game();
 
-int main() {
+int main(int argc, char **argv) {
   struct Game *game = init_game();
   int ch;
   while (game->running) {
@@ -20,9 +23,26 @@ int main() {
     }
     loop(game, NONE, NONE);
   }
-
+  
   endwin();
   free(game);
+//  if (strcmp(argv[1], "serve") == 0) {
+//    int serv_sock = net_serv_init_sock();
+//    printf("socket initialized\n");
+//    int client_sock = net_serv_conn_client(serv_sock);
+//    printf("Client socket found\n");
+//    struct DataMsg *data = malloc(sizeof(*data));
+//    data->action = PAD_UP;
+//    data->action_time = time(NULL);
+//    net_send_msg(client_sock, data);
+//    printf("Message sent\n");
+//  } else {
+//    int sock = net_client_init_sock();
+//    printf("Socket initialized\n");
+//    struct DataMsg *data = net_recv_msg(sock);
+//    printf("Messaged received\n");
+//    printf("Action: %d, Time: %ld\n", data->action, data->action_time);
+//  }
   return 0;
 }
 

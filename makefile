@@ -1,6 +1,6 @@
 PROGRAM := pong
 CC := clang
-CFLAGS := -Wall -Wextra -Iinclude -Ilib/Unity/src -O0 -ggdb -std=c99 -lncurses -fsanitize=address
+CFLAGS := -Wall -Wextra -Iinclude -Ilib/Unity/src -O0 -ggdb -std=c23 -lncurses -fsanitize=address,undefined
 
 SRC := $(wildcard src/*.c)
 OBJ := $(patsubst src/%.c, build/%.o, $(SRC))
