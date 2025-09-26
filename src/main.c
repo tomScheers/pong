@@ -7,92 +7,102 @@
 #include "net.h"
 #include "render.h"
 
-void server(struct Game *game);
-void client(struct Game *game);
+#define FRAME_DELAY_MS 1000
+
+static void handle_connection(struct Game *game, int sock);
+static enum PlayerAction handle_user_input(int ch);
 
 int main(int argc, char **argv) {
-  // struct Game *game = init_game();
-  struct Game *game = NULL;
+  int return_status = EXIT_SUCCESS;
+
+  struct Game *game = init_game();
+  int sock = -1; // Invalid socket
 
   if (strcmp(argv[1], "serve") == 0) {
-    server(game);
-  } else {
-    client(game);
-  }
+    int serv_sock = net_serv_init_sock();
 
-  // endwin();
-  // free(game);
-  return 0;
-}
-
-void server(struct Game *game) {
-  int serv_sock = net_serv_init_sock();
-  int sock = net_serv_conn_client(serv_sock);
-  printf("closing socket\n");
-  close(serv_sock);
-  int ch;
-  struct DataMsg *data = malloc(sizeof(*data));
-  while (true) {
-    data->action = PAD_UP;
-    ch = getch();
-    if (ch == 'q') {
-      game->running = false;
-      data->action = QUIT;
+    if (serv_sock == -1) {
+      perror("net_serv_init_sock");
+      return_status = EXIT_FAILURE;
+      goto cleanup;
     }
-    data->action_time = time(NULL);
-    printf("Waiting 4 seconds...\n");
-    sleep(1);
-    printf("1\n");
-    sleep(1);
-    printf("2\n");
-    sleep(1);
-    printf("3\n");
-    sleep(1);
-    printf("4\n");
-    net_send_msg(sock, data);
-    struct DataMsg *rec_data = net_recv_msg(sock);
-    printf("Received move: %d\n", rec_data->action);
+
+    sock = net_serv_conn_client(serv_sock);
+
+    close(serv_sock);
+
+    if (sock == -1) {
+      perror("net_serv_conn_client");
+      return_status = EXIT_FAILURE;
+      goto cleanup;
+    }
+  } else {
+    sock = net_client_init_sock();
+    if (sock == -1) {
+      perror("net_client_init_sock");
+      return_status = EXIT_FAILURE;
+      return EXIT_FAILURE;
+    }
   }
-  // loop(game, data->action, rec_data->action);
-  free(data);
+
+  handle_connection(game, sock);
+
+cleanup:
   close(sock);
-  // free(rec_data);
+  endwin();
+  free(game);
+  return return_status;
 }
 
-void client(struct Game *game) {
-  int sock = net_client_init_sock();
-  if (sock == -1) {
-    perror("net_client_init_sock");
+static void handle_connection(struct Game *game, int sock) {
+  struct DataMsg *data = malloc(sizeof(*data));
+  if (!data) {
+    perror("malloc");
     return;
   }
-  int ch;
-  struct DataMsg *data = malloc(sizeof(*data));
-  struct DataMsg *rec_data = net_recv_msg(sock);
-  while (true) {
-    data->action = PAD_UP;
-    ch = getch();
-    if (ch == 'q') {
-      game->running = false;
-      data->action = QUIT;
-    }
-    data->action_time = time(NULL);
-    if (!rec_data) {
-      printf("No data receive\n");
-    }
-    printf("Move: %d\n", rec_data->action);
-    printf("Waiting 4 seconds...\n");
-    sleep(1);
-    printf("1\n");
-    sleep(1);
-    printf("2\n");
-    sleep(1);
-    printf("3\n");
-    sleep(1);
-    printf("4\n");
-    net_send_msg(sock, data);
+
+  struct DataMsg *rec_data = malloc(sizeof(*rec_data));
+  if (!rec_data) {
+    perror("malloc");
+    goto cleanup;
   }
-  // loop(game, data->action, rec_data->action);
-  free(data);
+
+  while (game->running) {
+    data->action = handle_user_input(getchar());
+    data->action_time = time(NULL);
+
+    if (net_send_msg(sock, data) == -1) {
+      perror("net_send_msg");
+      goto cleanup;
+    }
+
+    if (net_recv_msg(sock, rec_data) == -1) {
+      perror("net_recv_msg");
+      goto cleanup;
+    }
+
+    if (rec_data->action == QUIT) {
+      game->running = false;
+    } else {
+      loop(game, data->action, rec_data->action);
+    }
+
+    napms(FRAME_DELAY_MS);
+  }
+cleanup:
   free(rec_data);
-  close(sock);
+  free(data);
+}
+
+static enum PlayerAction handle_user_input(int ch) {
+  switch (ch) {
+  case 'q':
+    return QUIT;
+  case 'j':
+    return PAD_DOWN;
+  case 'k':
+    return PAD_UP;
+  default:
+    return NONE;
+  }
 }

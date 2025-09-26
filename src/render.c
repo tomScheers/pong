@@ -5,24 +5,25 @@
 
 void loop(struct Game *game, enum PlayerAction your_action,
           enum PlayerAction opponend_action) {
-  mvaddch(game->ball_y, game->ball_x, '0');
+  printw("Your move: %d\nOpponend Move: %d\n", your_action, opponend_action);
   refresh();
-  napms(40);
-  mvdelch(game->ball_y, game->ball_x);
-  refresh();
+  // mvaddch(game->ball_y, game->ball_x, '0');
+  // refresh();
+  // mvdelch(game->ball_y, game->ball_x);
+  // refresh();
 
-  if (game->ball_x == game->game_width) {
-    game->x_ball_orientation = -1;
-  } else if (game->ball_x == 0) {
-    game->x_ball_orientation = 1;
-  }
-  if (game->ball_y == game->game_height) {
-    game->y_ball_orientation = -1;
-  } else if (game->ball_y == 0) {
-    game->y_ball_orientation = 1;
-  }
-  game->ball_x += game->x_ball_orientation;
-  game->ball_y += game->y_ball_orientation;
+  // if (game->ball_x == game->game_width) {
+  //   game->x_ball_orientation = -1;
+  // } else if (game->ball_x == 0) {
+  //   game->x_ball_orientation = 1;
+  // }
+  // if (game->ball_y == game->game_height) {
+  //   game->y_ball_orientation = -1;
+  // } else if (game->ball_y == 0) {
+  //   game->y_ball_orientation = 1;
+  // }
+  // game->ball_x += game->x_ball_orientation;
+  // game->ball_y += game->y_ball_orientation;
 }
 
 struct Game *init_game() {
@@ -33,10 +34,10 @@ struct Game *init_game() {
   game->game_width = 30;
 
   initscr();
-  nodelay(stdscr, TRUE);
-  keypad(stdscr, TRUE);
   cbreak();
   noecho();
+  // nodelay(stdscr, TRUE);
+  keypad(stdscr, TRUE);
   curs_set(0);
 
   game->ball_y = game->game_height / 2 + 5;
