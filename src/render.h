@@ -1,5 +1,5 @@
-#ifndef PONG_H
-#define PONG_H
+#ifndef RENDERER_H
+#define RENDERER_H
 
 #include <stdbool.h>
 
@@ -20,6 +20,8 @@ struct Game {
   bool running;
 };
 
-void start();
+void loop(struct Game *game, enum PlayerAction your_action,
+          enum PlayerAction opponend_action);
+struct Game *init_game();
 
 #endif
