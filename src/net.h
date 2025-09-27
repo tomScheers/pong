@@ -4,7 +4,7 @@
 #include "pong.h"
 #include <sys/socket.h>
 
-#define PORT 120
+#define PORT 1638
 
 struct DataMsg {
   enum PlayerAction action;

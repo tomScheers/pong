@@ -17,9 +17,13 @@ struct Game {
   int ball_y;
   int game_width;
   int game_height;
+  int plr_one_x;
+  int plr_one_y;
+  int plr_two_x;
+  int plr_two_y;
+  char player_score_one;
+  char player_score_two;
   bool running;
 };
-
-void start();
 
 #endif

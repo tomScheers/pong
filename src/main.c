@@ -9,68 +9,78 @@
 #include "pong.h"
 
 void loop(struct Game *game, enum PlayerAction your_action,
-          enum PlayerAction opponend_action);
+          enum PlayerAction opponent_action);
+
+void draw_player(struct Game *game, enum PlayerAction action);
+
 struct Game *init_game();
 
 int main(int argc, char **argv) {
-  /*  struct Game *game = init_game();
-    int ch;
-    while (game->running) {
-      ch = getch();
-      if (ch == 'q') {
-        game->running = false;
-        break;
-      }
-      loop(game, NONE, NONE);
-    }
 
-    endwin();
-    free(game);
-  */
-  if (strcmp(argv[1], "serve") == 0) {
-    int serv_sock = net_serv_init_sock();
-    printf("socket initialized\n");
-    int client_sock = net_serv_conn_client(serv_sock);
-    printf("Client socket found\n");
-    struct DataMsg *data = malloc(sizeof(*data));
-    data->action = PAD_UP;
-    data->action_time = time(NULL);
-    net_send_msg(client_sock, data);
-    printf("Message sent\n");
-    free(data);
-  } else {
-    int sock = net_client_init_sock();
-    printf("Socket initialized\n");
-    struct DataMsg *data = net_recv_msg(sock);
-    printf("Messaged received\n");
-    printf("Action: %d, Time: %ld\n", data->action, data->action_time);
-    free(data);
+  struct Game *game = init_game();
+  enum PlayerAction action;
+  int ch;
+
+  while (game->running) {
+    ch = getch();
+    switch (ch) {
+    case KEY_UP:
+      action = PAD_UP;
+      loop(game, action, NONE);
+      break;
+    case KEY_DOWN:
+      action = PAD_DOWN;
+      loop(game, action, NONE);
+      break;
+    case 'q':
+      action = QUIT;
+      exit(0); // Can't really do much with the PlayerAction
+    default:
+      action = NONE;
+      break;
+    }
+    loop(game, action, NONE);
   }
+  free(game);
   return 0;
 }
 
 void loop(struct Game *game, enum PlayerAction your_action,
-          enum PlayerAction opponend_action) {
+          enum PlayerAction opponent_action) {
+
+  draw_player(game, your_action);
   mvaddch(game->ball_y, game->ball_x, '0');
+
   refresh();
   napms(40);
   mvdelch(game->ball_y, game->ball_x);
   refresh();
 
-  if (game->ball_x == game->game_width) {
-    game->x_ball_orientation = -1;
-  } else if (game->ball_x == 0) {
-    game->x_ball_orientation = 1;
+  if (game->ball_x == game->game_width || game->ball_x == 0) {
+    game->x_ball_orientation *= -1;
   }
-  if (game->ball_y == game->game_height) {
-    game->y_ball_orientation = -1;
-  } else if (game->ball_y == 0) {
-    game->y_ball_orientation = 1;
-  }
-  game->ball_x += game->x_ball_orientation;
-  game->ball_y += game->y_ball_orientation;
-}
 
+  if (game->ball_y == game->game_height || game->ball_y == 0) {
+    game->y_ball_orientation *= -1;
+
+    // Check if next hit is going to be collision and adjust orientation
+    int next_y = game->ball_y + game->y_ball_orientation;
+    int next_x = game->ball_x + game->x_ball_orientation;
+    if (mvinch(next_y, next_x) == '|') {
+      game->x_ball_orientation *= -1;
+      if (mvinch(next_y - 1, next_x + COLS) == '|' &&
+          mvinch(next_y + 1, next_x - COLS) == '|') { // Central hit
+        game->y_ball_orientation = 0;
+      } else if (mvinch(next_y + 1, next_x) == '|') { // Upper hit
+        game->y_ball_orientation = -1;
+      } else {
+        game->y_ball_orientation = 1;
+      }
+    }
+    game->ball_x += game->x_ball_orientation;
+    game->ball_y += game->y_ball_orientation;
+  }
+}
 struct Game *init_game() {
   struct Game *game = malloc(sizeof(struct Game));
 
@@ -85,10 +95,18 @@ struct Game *init_game() {
   noecho();
   curs_set(0);
 
+  game->plr_one_x = 1;
+  game->plr_one_y = LINES / 2;
+  game->plr_two_x = COLS;
+  game->plr_one_y = LINES / 2;
+
+  game->player_score_one = '0';
+  game->player_score_two = '0';
+
   game->ball_y = game->game_height / 2 + 5;
   game->ball_x = game->game_width / 2;
-  game->x_ball_orientation = 1;
-  game->y_ball_orientation = 1;
+  game->x_ball_orientation = -1;
+  game->y_ball_orientation = 0;
 
   start_color();
   init_pair(1, COLOR_BLUE, COLOR_BLACK);
@@ -96,4 +114,22 @@ struct Game *init_game() {
   refresh();
 
   return game;
+}
+
+void draw_player(struct Game *game, enum PlayerAction action) {
+  switch (action) {
+  case PAD_UP:
+    mvdelch(game->plr_one_y + 1, game->plr_one_x);
+    mvaddch(game->plr_one_y - 2, game->plr_one_x, '|');
+    game->plr_one_y--;
+    break;
+  case PAD_DOWN:
+    mvdelch(game->plr_one_y - 1, game->plr_one_x);
+    mvaddch(game->plr_one_y + 2, game->plr_one_x, '|');
+    game->plr_one_y++;
+    break;
+  case NONE:
+    return;
+    break;
+  }
 }
