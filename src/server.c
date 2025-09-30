@@ -6,7 +6,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-int net_serv_init_sock() {
+int net_serv_init_sock(void) {
   int serv_sock = socket(AF_INET, SOCK_STREAM, 0);
   if (serv_sock == -1) {
     perror("socket");

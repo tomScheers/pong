@@ -31,4 +31,7 @@ struct Game {
   bool running;
 };
 
+void render(struct Game *game, enum PlayerAction your_action,
+            enum PlayerAction opponent_action);
+
 #endif
