@@ -1,58 +1,66 @@
-#include <locale.h>
 #include <ncurses.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
 
 #include "net.h"
-#include "pong.h"
+#include "render.h"
+#define FRAME_DELAY_MS 100
 
 void loop(struct Game *game, enum PlayerAction your_action,
           enum PlayerAction opponent_action);
 
 void draw_player(struct Game *game, enum PlayerAction action);
+static void handle_connection(struct Game *game, int sock);
+static enum PlayerAction handle_user_input(int ch);
 
 struct Game *init_game();
 
 int main(int argc, char **argv) {
-
   struct Game *game = init_game();
-  enum PlayerAction action;
-  int ch;
 
-  while (game->running) {
-    ch = getch();
-    switch (ch) {
-    case KEY_UP:
-      action = PAD_UP;
-      loop(game, action, NONE);
-      break;
-    case KEY_DOWN:
-      action = PAD_DOWN;
-      loop(game, action, NONE);
-      break;
-    case 'q':
-      action = QUIT;
-      exit(0); // Can't really do much with the PlayerAction
-    default:
-      action = NONE;
-      break;
+  int sock = -1;
+  if (argc > 1 && strcmp(argv[1], "serve") == 0) {
+    int serv_sock = net_serv_init_sock();
+
+    if (serv_sock == -1) {
+      perror("net_serv_init_sock");
+      goto cleanup;
     }
-    loop(game, action, NONE);
+
+    sock = net_serv_conn_client(serv_sock);
+
+    close(serv_sock);
+
+    if (sock == -1) {
+      perror("net_serv_conn_client");
+      goto cleanup;
+    }
+  } else {
+    sock = net_client_init_sock();
+    if (sock == -1) {
+      perror("net_client_init_sock");
+      goto cleanup;
+    }
   }
+
+  handle_connection(game, sock);
+
+cleanup:
+  endwin();
+  close(sock);
   free(game);
-  return 0;
+  return EXIT_SUCCESS;
 }
 
 void loop(struct Game *game, enum PlayerAction your_action,
           enum PlayerAction opponent_action) {
-
   draw_player(game, your_action);
   mvaddch(game->ball_y, game->ball_x, '0');
 
   refresh();
-  napms(40);
   mvdelch(game->ball_y, game->ball_x);
   refresh();
 
@@ -116,6 +124,59 @@ struct Game *init_game() {
   return game;
 }
 
+static void handle_connection(struct Game *game, int sock) {
+  struct DataMsg *data = malloc(sizeof(*data));
+  if (!data) {
+    perror("malloc");
+    return;
+  }
+
+  struct DataMsg *rec_data = malloc(sizeof(*rec_data));
+  if (!rec_data) {
+    perror("malloc");
+    goto cleanup;
+  }
+
+  while (game->running) {
+    data->action = handle_user_input(getch());
+    data->action_time = time(NULL);
+
+    if (net_send_msg(sock, data) == -1) {
+      perror("net_send_msg");
+      goto cleanup;
+    }
+
+    if (net_recv_msg(sock, rec_data) == -1) {
+      perror("net_recv_msg");
+      goto cleanup;
+    }
+
+    if (rec_data->action == QUIT || data->action == QUIT) {
+      game->running = false;
+    } else {
+      loop(game, data->action, rec_data->action);
+    }
+
+    napms(FRAME_DELAY_MS);
+  }
+cleanup:
+  free(rec_data);
+  free(data);
+}
+
+static enum PlayerAction handle_user_input(int ch) {
+  switch (ch) {
+  case 'q':
+    return QUIT;
+  case 'j':
+    return PAD_DOWN;
+  case 'k':
+    return PAD_UP;
+  default:
+    return NONE;
+  }
+}
+
 void draw_player(struct Game *game, enum PlayerAction action) {
   switch (action) {
   case PAD_UP:
@@ -128,7 +189,7 @@ void draw_player(struct Game *game, enum PlayerAction action) {
     mvaddch(game->plr_one_y + 2, game->plr_one_x, '|');
     game->plr_one_y++;
     break;
-  case NONE:
+  default:
     return;
     break;
   }
