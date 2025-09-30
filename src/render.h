@@ -2,6 +2,9 @@
 #define RENDERER_H
 
 #include <stdbool.h>
+#include <stdint.h>
+
+#define PAD_CHAR '|'
 
 enum PlayerAction {
   PAD_DOWN,
@@ -10,24 +13,22 @@ enum PlayerAction {
   QUIT,
 };
 
-struct Game {
-  int x_ball_orientation;
-  int y_ball_orientation;
-  int ball_x;
-  int ball_y;
-  int game_width;
-  int game_height;
-  int plr_one_x;
-  int plr_one_y;
-  int plr_two_x;
-  int plr_two_y;
-  char player_score_one;
-  char player_score_two;
-  bool running;
+struct Player {
+  uint16_t x;
+  uint16_t y;
+  uint8_t score;
 };
 
-// void loop(struct Game *game, enum PlayerAction your_action,
-//           enum PlayerAction opponend_action);
-// struct Game *init_game();
+struct Game {
+  int8_t x_ball_orientation;
+  int8_t y_ball_orientation;
+  int16_t ball_x;
+  int16_t ball_y;
+  int16_t game_width;
+  int16_t game_height;
+  struct Player plr_one;
+  struct Player plr_two;
+  bool running;
+};
 
 #endif

@@ -12,7 +12,8 @@
 void loop(struct Game *game, enum PlayerAction your_action,
           enum PlayerAction opponent_action);
 
-void draw_player(struct Game *game, enum PlayerAction action);
+void draw_player(struct Game *game, enum PlayerAction action,
+                 enum PlayerAction opponent_action);
 static void handle_connection(struct Game *game, int sock);
 static enum PlayerAction handle_user_input(int ch);
 
@@ -57,7 +58,7 @@ cleanup:
 
 void loop(struct Game *game, enum PlayerAction your_action,
           enum PlayerAction opponent_action) {
-  draw_player(game, your_action);
+  draw_player(game, your_action, opponent_action);
   mvaddch(game->ball_y, game->ball_x, '0');
 
   refresh();
@@ -74,15 +75,16 @@ void loop(struct Game *game, enum PlayerAction your_action,
     // Check if next hit is going to be collision and adjust orientation
     int next_y = game->ball_y + game->y_ball_orientation;
     int next_x = game->ball_x + game->x_ball_orientation;
-    if (mvinch(next_y, next_x) == '|') {
+    if ((mvinch(next_y, next_x) & A_CHARTEXT) == PAD_CHAR) {
       game->x_ball_orientation *= -1;
-      if (mvinch(next_y - 1, next_x + COLS) == '|' &&
-          mvinch(next_y + 1, next_x - COLS) == '|') { // Central hit
+      if ((mvinch(next_y - 1, next_x) & A_CHARTEXT) == PAD_CHAR &&
+          (mvinch(next_y + 1, next_x) & A_CHARTEXT) == PAD_CHAR) { // Central hit
         game->y_ball_orientation = 0;
-      } else if (mvinch(next_y + 1, next_x) == '|') { // Upper hit
-        game->y_ball_orientation = -1;
-      } else {
+      } else if ((mvinch(next_y - 1, next_x) &
+                 A_CHARTEXT) == PAD_CHAR) { // Upper hit
         game->y_ball_orientation = 1;
+      } else {
+        game->y_ball_orientation = -1;
       }
     }
     game->ball_x += game->x_ball_orientation;
@@ -103,13 +105,13 @@ struct Game *init_game() {
   noecho();
   curs_set(0);
 
-  game->plr_one_x = 1;
-  game->plr_one_y = LINES / 2;
-  game->plr_two_x = COLS;
-  game->plr_one_y = LINES / 2;
+  game->plr_one.x = 1;
+  game->plr_one.y = LINES / 2;
+  game->plr_two.x = COLS;
+  game->plr_two.y = LINES / 2;
 
-  game->player_score_one = '0';
-  game->player_score_two = '0';
+  game->plr_one.score = 0;
+  game->plr_two.score = 0;
 
   game->ball_y = game->game_height / 2 + 5;
   game->ball_x = game->game_width / 2;
@@ -119,6 +121,9 @@ struct Game *init_game() {
   start_color();
   init_pair(1, COLOR_BLUE, COLOR_BLACK);
   bkgd(COLOR_PAIR(1));
+
+  draw_player(game, NONE, NONE);
+
   refresh();
 
   return game;
@@ -177,19 +182,48 @@ static enum PlayerAction handle_user_input(int ch) {
   }
 }
 
-void draw_player(struct Game *game, enum PlayerAction action) {
-  switch (action) {
+void draw_player(struct Game *game, enum PlayerAction your_action,
+                 enum PlayerAction opponent_action) {
+  switch (your_action) {
   case PAD_UP:
-    mvdelch(game->plr_one_y + 1, game->plr_one_x);
-    mvaddch(game->plr_one_y - 2, game->plr_one_x, '|');
-    game->plr_one_y--;
+    mvdelch(game->plr_one.y + 1, game->plr_one.x);
+    mvaddch(game->plr_one.y - 2, game->plr_one.x, PAD_CHAR);
+    game->plr_one.y--;
     break;
   case PAD_DOWN:
-    mvdelch(game->plr_one_y - 1, game->plr_one_x);
-    mvaddch(game->plr_one_y + 2, game->plr_one_x, '|');
-    game->plr_one_y++;
+    mvdelch(game->plr_one.y - 1, game->plr_one.x);
+    mvaddch(game->plr_one.y + 2, game->plr_one.x, PAD_CHAR);
+    game->plr_one.y++;
     break;
-  default:
+  case NONE:
+    mvdelch(game->plr_one.y - 1, game->plr_one.x);
+    mvaddch(game->plr_one.y - 1, game->plr_one.x, PAD_CHAR);
+    mvdelch(game->plr_one.y, game->plr_one.x);
+    mvaddch(game->plr_one.y, game->plr_one.x, PAD_CHAR);
+    mvdelch(game->plr_one.y + 1, game->plr_one.x);
+    mvaddch(game->plr_one.y + 1, game->plr_one.x, PAD_CHAR);
+    return;
+    break;
+  }
+
+  switch (opponent_action) {
+  case PAD_UP:
+    mvdelch(game->plr_two.y + 1, game->plr_two.x);
+    mvaddch(game->plr_two.y - 2, game->plr_two.x, PAD_CHAR);
+    game->plr_two.y--;
+    break;
+  case PAD_DOWN:
+    mvdelch(game->plr_two.y - 1, game->plr_two.x);
+    mvaddch(game->plr_two.y + 2, game->plr_two.x, PAD_CHAR);
+    game->plr_two.y++;
+    break;
+  case NONE:
+    mvdelch(game->plr_two.y - 1, game->plr_two.x);
+    mvaddch(game->plr_two.y - 1, game->plr_two.x, PAD_CHAR);
+    mvdelch(game->plr_two.y, game->plr_two.x);
+    mvaddch(game->plr_two.y, game->plr_two.x, PAD_CHAR);
+    mvdelch(game->plr_two.y + 1, game->plr_two.x);
+    mvaddch(game->plr_two.y + 1, game->plr_two.x, PAD_CHAR);
     return;
     break;
   }
