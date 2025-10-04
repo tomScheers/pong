@@ -12,6 +12,7 @@
 #define DEFAULT_BALL_SPEED 100
 #define DEFAULT_FPS 10
 #define DEFAULT_PAD_TILES 3
+#define DEFAULT_PORT_NUM 6767
 
 enum PlayerAction {
   NONE,
@@ -28,6 +29,14 @@ struct Settings {
    */
   uint16_t screen_width;
   uint16_t screen_height;
+
+  /*
+   * port represents the port number the current program is using
+   *
+   * This is only really useful for diagnostics and for the user to choose what
+   * port they want to serve/connect a game to
+   */
+  uint16_t port;
 
   /*
    * winning_score dictates what score either player has to reach for them to

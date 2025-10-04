@@ -16,7 +16,7 @@ int main(int argc, char **argv) {
 
   int sock = -1;
   if (argc > 1 && strcmp(argv[1], "serve") == 0) {
-    int serv_sock = net_serv_init_sock();
+    int serv_sock = net_serv_init_sock(game->settings.port);
 
     if (serv_sock == -1) {
       perror("net_serv_init_sock");
@@ -35,7 +35,7 @@ int main(int argc, char **argv) {
     send(sock, &game->settings, sizeof(game->settings), 0);
     recv(sock, &game->settings, sizeof(game->settings), 0);
   } else {
-    sock = net_client_init_sock();
+    sock = net_client_init_sock(game->settings.port);
     if (sock == -1) {
       perror("net_client_init_sock");
       goto cleanup;

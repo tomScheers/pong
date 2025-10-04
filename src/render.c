@@ -62,6 +62,7 @@ struct Game *init_game(char **args, size_t argc) {
   game->settings.pad_tiles = DEFAULT_PAD_TILES;
   game->settings.program_version = PROGRAM_VERSION;
   game->settings.winning_score = DEFAULT_WINNING_SCORE;
+  game->settings.port = DEFAULT_PORT_NUM;
 
   for (uint16_t i = 1; i < argc; ++i) {
     if (is_flag(args[i], "-h") || is_flag(args[i], "--height")) {
@@ -121,6 +122,13 @@ struct Game *init_game(char **args, size_t argc) {
         fprintf(stderr, "invalid argument\n");
         return NULL;
       }
+    } else if (is_flag(args[i], "-p") || is_flag(args[i], "--port")) {
+      if (i + 1 < argc) {
+        game->settings.port = atoi(args[++i]);
+      } else {
+        fprintf(stderr, "invalid argument\n");
+        return NULL;
+      }
     } else if (is_flag(args[i], "serve")) {
       continue;
     } else {
@@ -128,7 +136,6 @@ struct Game *init_game(char **args, size_t argc) {
       return NULL;
     }
   }
-
   initscr();
   nodelay(stdscr, TRUE);
   keypad(stdscr, TRUE);

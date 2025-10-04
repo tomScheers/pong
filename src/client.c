@@ -2,14 +2,14 @@
 #include <netinet/in.h>
 #include <unistd.h>
 
-int net_client_init_sock() {
+int net_client_init_sock(int port) {
   int client_sock = socket(AF_INET, SOCK_STREAM, 0);
   if (client_sock == -1)
     return -1;
   struct sockaddr_in serv_addr;
 
   serv_addr.sin_family = AF_INET;
-  serv_addr.sin_port = htons(PORT);
+  serv_addr.sin_port = htons(port);
   serv_addr.sin_addr.s_addr = INADDR_ANY;
 
   int connect_status =
