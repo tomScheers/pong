@@ -8,8 +8,6 @@
 #include <sys/time.h>
 #include <time.h>
 
-#define FRAME_DELAY_MS 10
-
 static enum PlayerAction handle_user_input(int ch);
 
 int net_recv_msg(int opp_sock, struct DataMsg *ret_msg) {

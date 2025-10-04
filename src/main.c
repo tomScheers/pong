@@ -31,12 +31,23 @@ int main(int argc, char **argv) {
       perror("net_serv_conn_client");
       goto cleanup;
     }
+
+    send(sock, &game->settings, sizeof(game->settings), 0);
+    recv(sock, &game->settings, sizeof(game->settings), 0);
   } else {
     sock = net_client_init_sock();
     if (sock == -1) {
       perror("net_client_init_sock");
       goto cleanup;
     }
+    recv(sock, &game->settings, sizeof(game->settings), 0);
+    if (game->settings.screen_width > COLS) {
+      game->settings.screen_width = COLS;
+    }
+    if (game->settings.screen_height > LINES) {
+      game->settings.screen_height = LINES;
+    }
+    send(sock, &game->settings, sizeof(game->settings), 0);
   }
 
   handle_connection(game, sock);

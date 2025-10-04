@@ -4,7 +4,7 @@
 #include "render.h"
 #include <sys/socket.h>
 
-#define PORT 1639
+#define PORT 1630
 
 struct DataMsg {
   time_t action_time;
