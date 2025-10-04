@@ -54,7 +54,7 @@ void handle_connection(struct Game *game, int sock) {
     }
 
     flushinp();
-    napms(FRAME_DELAY_MS);
+    napms(1000 / game->settings.frames_per_second);
   }
 cleanup:
   free(rec_data);

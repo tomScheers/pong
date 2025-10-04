@@ -7,10 +7,12 @@
 #include "net.h"
 #include "render.h"
 
-struct Game *init_game();
-
 int main(int argc, char **argv) {
-  struct Game *game = init_game();
+  struct Game *game = init_game(argv, argc);
+  if (!game) {
+    perror("init_game");
+    return EXIT_FAILURE;
+  }
 
   int sock = -1;
   if (argc > 1 && strcmp(argv[1], "serve") == 0) {
