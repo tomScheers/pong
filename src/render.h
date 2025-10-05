@@ -19,11 +19,12 @@ enum Gamemode {
   JOIN,
   OFFLINE, // NOT IMPLEMENTED YET
   BOT,     // NOT IMPLEMENTED YET
+  QUIT_PROGRAM,
 };
 
 enum PlayerAction {
   NONE,
-  QUIT,
+  QUIT_GAME,
   PAD_DOWN,
   PAD_UP,
 };
@@ -117,6 +118,7 @@ struct Game {
 struct Game *init_game(char **args, size_t argc);
 void render(struct Game *game, enum PlayerAction your_action,
             enum PlayerAction opponent_action);
-enum Gamemode loading_screen(struct Game *game);
+enum Gamemode loading_screen();
+void change_serve_settings(struct Game *game);
 
 #endif
