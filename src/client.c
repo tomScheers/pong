@@ -1,5 +1,6 @@
 #include "net.h"
 #include <netinet/in.h>
+#include <stdlib.h>
 #include <unistd.h>
 
 int net_client_init_sock(int port) {

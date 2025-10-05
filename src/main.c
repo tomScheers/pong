@@ -47,6 +47,7 @@ int main(int argc, char **argv) {
       handle_connection(game, sock);
       close(sock);
     } else if (gamemode == JOIN) {
+      change_client_settings(game);
       int sock = -1;
       sock = net_client_init_sock(game->settings.port);
       if (sock == -1) {
@@ -73,7 +74,7 @@ int main(int argc, char **argv) {
     }
 
     set_game_fields(game);
-    clear();
+    erase();
     refresh();
   }
 
