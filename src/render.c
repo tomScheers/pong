@@ -180,49 +180,36 @@ struct Game *init_game(char **args, size_t argc) {
 
 void draw_player(struct Game *game, enum PlayerAction your_action,
                  enum PlayerAction opponent_action) {
+  mvaddch(game->plr_one.y - 1, game->plr_one.x, ' ');
+  mvaddch(game->plr_one.y, game->plr_one.x, ' ');
+  mvaddch(game->plr_one.y + 1, game->plr_one.x, ' ');
+  mvaddch(game->plr_two.y - 1, game->plr_two.x, ' ');
+  mvaddch(game->plr_two.y, game->plr_two.x, ' ');
+  mvaddch(game->plr_two.y + 1, game->plr_two.x, ' ');
   switch (your_action) {
   case PAD_UP:
-    mvdelch(game->plr_one.y + 1, game->plr_one.x);
-    mvaddch(game->plr_one.y - 2, game->plr_one.x, game->settings.pad_char);
     game->plr_one.y--;
     break;
   case PAD_DOWN:
-    mvdelch(game->plr_one.y - 1, game->plr_one.x);
-    mvaddch(game->plr_one.y + 2, game->plr_one.x, game->settings.pad_char);
     game->plr_one.y++;
     break;
   case NONE:
-  default:
-    mvdelch(game->plr_one.y - 1, game->plr_one.x);
-    mvaddch(game->plr_one.y - 1, game->plr_one.x, game->settings.pad_char);
-    mvdelch(game->plr_one.y, game->plr_one.x);
-    mvaddch(game->plr_one.y, game->plr_one.x, game->settings.pad_char);
-    mvdelch(game->plr_one.y + 1, game->plr_one.x);
-    mvaddch(game->plr_one.y + 1, game->plr_one.x, game->settings.pad_char);
-    return;
     break;
   }
-
+  mvaddch(game->plr_one.y - 1, game->plr_one.x, DEFAULT_PAD_CHAR);
+  mvaddch(game->plr_one.y, game->plr_one.x, DEFAULT_PAD_CHAR);
+  mvaddch(game->plr_one.y + 1, game->plr_one.x, DEFAULT_PAD_CHAR);
   switch (opponent_action) {
   case PAD_UP:
-    mvdelch(game->plr_two.y + 1, game->plr_two.x);
-    mvaddch(game->plr_two.y - 2, game->plr_two.x, game->settings.pad_char);
     game->plr_two.y--;
     break;
   case PAD_DOWN:
-    mvdelch(game->plr_two.y - 1, game->plr_two.x);
-    mvaddch(game->plr_two.y + 2, game->plr_two.x, game->settings.pad_char);
     game->plr_two.y++;
     break;
   case NONE:
-  default:
-    mvdelch(game->plr_two.y - 1, game->plr_two.x);
-    mvaddch(game->plr_two.y - 1, game->plr_two.x, game->settings.pad_char);
-    mvdelch(game->plr_two.y, game->plr_two.x);
-    mvaddch(game->plr_two.y, game->plr_two.x, game->settings.pad_char);
-    mvdelch(game->plr_two.y + 1, game->plr_two.x);
-    mvaddch(game->plr_two.y + 1, game->plr_two.x, game->settings.pad_char);
-    return;
     break;
   }
+  mvaddch(game->plr_two.y - 1, game->plr_two.x, DEFAULT_PAD_CHAR);
+  mvaddch(game->plr_two.y, game->plr_two.x, DEFAULT_PAD_CHAR);
+  mvaddch(game->plr_two.y + 1, game->plr_two.x, DEFAULT_PAD_CHAR);
 }
