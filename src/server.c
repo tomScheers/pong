@@ -13,6 +13,9 @@ int net_serv_init_sock(int port) {
     return -1;
   }
 
+  int opt = 1;
+  setsockopt(serv_sock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+
   struct sockaddr_in serv_addr;
   serv_addr.sin_family = AF_INET; // Sets IP to ipv4
   serv_addr.sin_port = htons(port);

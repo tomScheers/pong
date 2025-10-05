@@ -120,5 +120,6 @@ void render(struct Game *game, enum PlayerAction your_action,
             enum PlayerAction opponent_action);
 enum Gamemode loading_screen();
 void change_serve_settings(struct Game *game);
+void set_game_fields(struct Game *game);
 
 #endif

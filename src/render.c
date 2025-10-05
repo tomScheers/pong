@@ -62,6 +62,23 @@ void render(struct Game *game, enum PlayerAction your_action,
   }
 }
 
+void set_game_fields(struct Game *game) {
+  game->running = true;
+
+  game->plr_one.x = 1;
+  game->plr_one.y = LINES / 2;
+  game->plr_two.x = COLS - 1;
+  game->plr_two.y = LINES / 2;
+
+  game->plr_one.score = 0;
+  game->plr_two.score = 0;
+
+  game->ball_y = game->settings.screen_height / 2 + 5;
+  game->ball_x = game->settings.screen_width / 2;
+  game->x_ball_orientation = -1;
+  game->y_ball_orientation = 0;
+}
+
 struct Game *init_game(char **args, size_t argc) {
   struct Game *game = malloc(sizeof(struct Game));
   if (!game)
@@ -164,28 +181,11 @@ struct Game *init_game(char **args, size_t argc) {
     game->settings.screen_width = COLS;
   }
 
-  game->running = true;
-
-  game->plr_one.x = 1;
-  game->plr_one.y = LINES / 2;
-  game->plr_two.x = COLS - 1;
-  game->plr_two.y = LINES / 2;
-
-  game->plr_one.score = 0;
-  game->plr_two.score = 0;
-
-  game->ball_y = game->settings.screen_height / 2 + 5;
-  game->ball_x = game->settings.screen_width / 2;
-  game->x_ball_orientation = -1;
-  game->y_ball_orientation = 0;
+  set_game_fields(game);
 
   start_color();
   init_pair(1, COLOR_BLUE, COLOR_BLACK);
   bkgd(COLOR_PAIR(1));
-
-  //  draw_player(game, NONE, NONE);
-
-  // refresh();
 
   return game;
 }
@@ -375,12 +375,22 @@ void change_serve_settings(struct Game *game) {
 
     for (int i = 0; i < settings_count; ++i) {
       int setting_x = width / 2 - strlen(settings[i].setting_str) - 1;
+
+      if (settings[i].setting_type == SETTING_NULL)
+        setting_x = width / 2 - strlen(settings[i].setting_str) / 2 - 1;
+
       int setting_value_x = width / 2 + 1;
       int setting_y = start_y + i;
 
+      if (selected == i && settings[i].setting_type == SETTING_NULL)
+        attron(A_REVERSE);
+
       mvwprintw(stdscr, setting_y, setting_x, "%s", settings[i].setting_str);
 
-      if (selected == i)
+      if (selected == i && settings[i].setting_type == SETTING_NULL)
+        attroff(A_REVERSE);
+
+      if (selected == i && settings[i].setting_type != SETTING_NULL)
         attron(A_REVERSE);
 
       if (settings[i].setting_type == SETTING_UINT16)
@@ -393,7 +403,7 @@ void change_serve_settings(struct Game *game) {
         mvwprintw(stdscr, setting_y, setting_value_x, "%c",
                   *(char *)settings[i].setting_value_ptr);
 
-      if (selected == i)
+      if (selected == i && settings[i].setting_type != SETTING_NULL)
         attroff(A_REVERSE);
     }
     refresh();

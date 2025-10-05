@@ -22,13 +22,13 @@ int main(int argc, char **argv) {
     enum Gamemode gamemode = loading_screen();
 
     int sock = -1;
+
     if (gamemode == SERVE) {
       change_serve_settings(game);
       int serv_sock = net_serv_init_sock(game->settings.port);
 
       if (serv_sock == -1) {
         perror("net_serv_init_sock");
-        close(sock);
         break;
       }
 
@@ -38,7 +38,6 @@ int main(int argc, char **argv) {
 
       if (sock == -1) {
         perror("net_serv_conn_client");
-        close(sock);
         break;
       }
 
@@ -48,7 +47,6 @@ int main(int argc, char **argv) {
       sock = net_client_init_sock(game->settings.port);
       if (sock == -1) {
         perror("net_client_init_sock");
-        close(sock);
         break;
       }
       recv(sock, &game->settings, sizeof(game->settings), 0);
@@ -60,16 +58,15 @@ int main(int argc, char **argv) {
       }
       send(sock, &game->settings, sizeof(game->settings), 0);
     } else if (gamemode == QUIT_PROGRAM) {
-      close(sock);
       break;
     } else {
       fprintf(stderr, "Gamemode not implemented yet\n");
-      close(sock);
       break;
     }
 
     handle_connection(game, sock);
     close(sock);
+    set_game_fields(game);
     clear();
     refresh();
   }

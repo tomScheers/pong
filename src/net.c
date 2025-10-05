@@ -33,6 +33,7 @@ void handle_connection(struct Game *game, int sock) {
 
   while (game->running) {
     data->action = handle_user_input(getch());
+    flushinp();
     data->action_time = time(NULL);
 
     if (net_send_msg(sock, data) == -1) {
@@ -45,13 +46,12 @@ void handle_connection(struct Game *game, int sock) {
       goto cleanup;
     }
 
-    if (rec_data->action == QUIT || data->action == QUIT) {
+    if (rec_data->action == QUIT_GAME || data->action == QUIT_GAME) {
       game->running = false;
     } else {
       render(game, data->action, rec_data->action);
     }
 
-    flushinp();
     napms(1000 / game->settings.frames_per_second);
   }
 cleanup:
@@ -62,7 +62,7 @@ cleanup:
 static enum PlayerAction handle_user_input(int ch) {
   switch (ch) {
   case 'q':
-    return QUIT;
+    return QUIT_GAME;
   case 'j':
     return PAD_DOWN;
   case 'k':
