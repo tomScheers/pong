@@ -129,8 +129,6 @@ struct Game *init_game(char **args, size_t argc) {
         fprintf(stderr, "invalid argument\n");
         return NULL;
       }
-    } else if (is_flag(args[i], "serve")) {
-      continue;
     } else {
       fprintf(stderr, "Invalid argument: %s\n", args[i]);
       return NULL;
@@ -171,9 +169,9 @@ struct Game *init_game(char **args, size_t argc) {
   init_pair(1, COLOR_BLUE, COLOR_BLACK);
   bkgd(COLOR_PAIR(1));
 
-  draw_player(game, NONE, NONE);
+  //  draw_player(game, NONE, NONE);
 
-  refresh();
+  // refresh();
 
   return game;
 }
@@ -212,4 +210,63 @@ void draw_player(struct Game *game, enum PlayerAction your_action,
   mvaddch(game->plr_two.y - 1, game->plr_two.x, DEFAULT_PAD_CHAR);
   mvaddch(game->plr_two.y, game->plr_two.x, DEFAULT_PAD_CHAR);
   mvaddch(game->plr_two.y + 1, game->plr_two.x, DEFAULT_PAD_CHAR);
+}
+
+enum Gamemode loading_screen(struct Game *game) {
+  int height, width;
+  getmaxyx(stdscr, height, width);
+
+  uint8_t selected = 0;
+
+  const char *pixel_art[] = {" _______  _______  _        _______ ",
+                             "(  ____ )(  ___  )( (    /|(  ____ \\",
+                             "| (    )|| (   ) ||  \\  ( || (    \\/",
+                             "| (____)|| |   | ||   \\ | || |      ",
+                             "|  _____)| |   | || (\\ \\) || | ____ ",
+                             "| (      | |   | || | \\   || | \\_  )",
+                             "| )      | (___) || )  \\  || (___) |",
+                             "|/       (_______)|/    )_)(_______)"};
+  int pixel_art_height = sizeof(pixel_art) / sizeof(pixel_art[0]);
+  int pixel_art_width = strlen(pixel_art[0]);
+
+  const char *msgs[] = {"serve", "join", "offline", "bot"};
+  int msg_count = sizeof(msgs) / sizeof(msgs[0]);
+
+  int total_len = 0;
+  for (int i = 0; i < msg_count; ++i)
+    total_len += strlen(msgs[i]);
+
+  int gaps = msg_count + 1;
+  int space = (width - total_len) / gaps;
+
+  int y = height / 2 + pixel_art_height / 2;
+  int pixel_art_y = height / 2 - pixel_art_height / 2 - pixel_art_height;
+  int pixel_art_x = (width - pixel_art_width) / 2;
+
+  int ch;
+  while ((ch = getch()) != '\n') {
+    for (int i = 0; i < pixel_art_height; ++i) {
+      mvprintw(pixel_art_y + i, pixel_art_x, "%s", pixel_art[i]);
+    }
+
+    if (ch == 'h' && selected > 0)
+      --selected;
+    if (ch == 'l' && selected < msg_count - 1)
+      ++selected;
+    int x = space;
+    for (int i = 0; i < msg_count; ++i) {
+      if (i == selected) {
+        attron(A_REVERSE);
+        mvprintw(y, x, "%s", msgs[i]);
+        attroff(A_REVERSE);
+      } else {
+        mvprintw(y, x, "%s", msgs[i]);
+      }
+      x += strlen(msgs[i]) + space;
+    }
+    refresh();
+  }
+  clear();
+  refresh();
+  return selected;
 }

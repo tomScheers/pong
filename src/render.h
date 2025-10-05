@@ -14,6 +14,13 @@
 #define DEFAULT_PAD_TILES 3
 #define DEFAULT_PORT_NUM 6767
 
+enum Gamemode {
+  SERVE,
+  JOIN,
+  OFFLINE, // NOT IMPLEMENTED YET
+  BOT,     // NOT IMPLEMENTED YET
+};
+
 enum PlayerAction {
   NONE,
   QUIT,
@@ -102,13 +109,14 @@ struct Game {
   struct Settings settings;
   uint16_t ball_x;
   uint16_t ball_y;
-  uint8_t x_ball_orientation;
-  uint8_t y_ball_orientation;
+  int8_t x_ball_orientation;
+  int8_t y_ball_orientation;
   bool running;
 };
 
 struct Game *init_game(char **args, size_t argc);
 void render(struct Game *game, enum PlayerAction your_action,
             enum PlayerAction opponent_action);
+enum Gamemode loading_screen(struct Game *game);
 
 #endif

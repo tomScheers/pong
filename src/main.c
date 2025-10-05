@@ -1,6 +1,5 @@
 #include <ncurses.h>
 #include <stdlib.h>
-#include <string.h>
 #include <sys/time.h>
 #include <unistd.h>
 
@@ -13,9 +12,10 @@ int main(int argc, char **argv) {
     perror("init_game");
     return EXIT_FAILURE;
   }
+  enum Gamemode gamemode = loading_screen(game);
 
   int sock = -1;
-  if (argc > 1 && strcmp(argv[1], "serve") == 0) {
+  if (gamemode == SERVE) {
     int serv_sock = net_serv_init_sock(game->settings.port);
 
     if (serv_sock == -1) {
@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
 
     send(sock, &game->settings, sizeof(game->settings), 0);
     recv(sock, &game->settings, sizeof(game->settings), 0);
-  } else {
+  } else if (gamemode == JOIN) {
     sock = net_client_init_sock(game->settings.port);
     if (sock == -1) {
       perror("net_client_init_sock");
@@ -48,6 +48,9 @@ int main(int argc, char **argv) {
       game->settings.screen_height = LINES;
     }
     send(sock, &game->settings, sizeof(game->settings), 0);
+  } else {
+    fprintf(stderr, "Gamemode not implemented yet\n");
+    goto cleanup;
   }
 
   handle_connection(game, sock);
