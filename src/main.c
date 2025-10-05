@@ -11,6 +11,8 @@ struct Setting {
   void *settings_field;
 };
 
+void offline_mode(struct Game *game);
+
 int main(int argc, char **argv) {
   struct Game *game = init_game(argv, argc);
   if (!game) {
@@ -21,9 +23,8 @@ int main(int argc, char **argv) {
   while (true) {
     enum Gamemode gamemode = loading_screen();
 
-    int sock = -1;
-
     if (gamemode == SERVE) {
+      int sock = -1;
       change_serve_settings(game);
       int serv_sock = net_serv_init_sock(game->settings.port);
 
@@ -43,7 +44,10 @@ int main(int argc, char **argv) {
 
       send(sock, &game->settings, sizeof(game->settings), 0);
       recv(sock, &game->settings, sizeof(game->settings), 0);
+      handle_connection(game, sock);
+      close(sock);
     } else if (gamemode == JOIN) {
+      int sock = -1;
       sock = net_client_init_sock(game->settings.port);
       if (sock == -1) {
         perror("net_client_init_sock");
@@ -57,15 +61,17 @@ int main(int argc, char **argv) {
         game->settings.screen_height = LINES;
       }
       send(sock, &game->settings, sizeof(game->settings), 0);
+      handle_connection(game, sock);
+      close(sock);
     } else if (gamemode == QUIT_PROGRAM) {
       break;
+    } else if (gamemode == OFFLINE) {
+      offline_mode(game);
     } else {
       fprintf(stderr, "Gamemode not implemented yet\n");
       break;
     }
 
-    handle_connection(game, sock);
-    close(sock);
     set_game_fields(game);
     clear();
     refresh();
@@ -74,4 +80,57 @@ int main(int argc, char **argv) {
   endwin();
   free(game);
   return EXIT_SUCCESS;
+}
+
+void offline_mode(struct Game *game) {
+  while (true) {
+    char ch1 = 0, ch2 = 0;
+    while (!ch1 || !ch2) {
+      char c = getch();
+      if (!ch1 && c != 'j' && c != 'k')
+        ch1 = c;
+      else if (!ch2 && c != 'w' && c != 's')
+        ch2 = c;
+    }
+    flushinp();
+
+    enum PlayerAction your_action, opponent_action;
+    switch (ch1) {
+    case 'w':
+      your_action = PAD_UP;
+      break;
+    case 's':
+      your_action = PAD_DOWN;
+      break;
+    case 'q':
+      your_action = QUIT_GAME;
+      break;
+    default:
+      your_action = NONE;
+      break;
+    }
+
+    switch (ch2) {
+    case 'k':
+      opponent_action = PAD_UP;
+      break;
+    case 'j':
+      opponent_action = PAD_DOWN;
+      break;
+    case 'q':
+      opponent_action = QUIT_GAME;
+      break;
+    default:
+      opponent_action = NONE;
+      break;
+    }
+
+    if (your_action == QUIT_GAME || opponent_action == QUIT_GAME) {
+      game->running = false;
+      break;
+    }
+
+    render(game, your_action, opponent_action);
+    napms(1000 / game->settings.frames_per_second);
+  }
 }
