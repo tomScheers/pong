@@ -9,6 +9,7 @@ static inline bool is_flag(char *given_flag, char *expected_flag);
 
 void set_game_fields(struct Game *game) {
   game->running = true;
+  game->speed_ticks = 0;
 
   game->plr_one.x = 1;
   game->plr_one.y = LINES / 2;

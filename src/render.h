@@ -14,6 +14,10 @@
 #define DEFAULT_PAD_TILES 3
 #define DEFAULT_PORT_NUM 6767
 
+#define ISCOLLIDING(ball_x, ball_y, plr_x, plr_y)                              \
+  (ball_x == plr_x &&                                                          \
+   (ball_y <= plr_y && ball_y >= plr_y - game->settings.pad_tiles))
+
 enum Gamemode {
   SERVE,
   JOIN,
@@ -56,6 +60,7 @@ struct Settings {
   uint16_t winning_score;
 
   /*
+   * Chars/second
    * ball_speed dictates the speed at which the ball moves throught the screen.
    * It defaults to 100.
    * ball_speed scales fractionaly with time, so 110 would update the
@@ -112,6 +117,7 @@ struct Game {
   uint16_t ball_y;
   int8_t x_ball_orientation;
   int8_t y_ball_orientation;
+  uint8_t speed_ticks;
   bool running;
 };
 
