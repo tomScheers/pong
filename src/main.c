@@ -47,6 +47,9 @@ int main(int argc, char **argv) {
       handle_connection(game, sock);
       close(sock);
     } else if (gamemode == JOIN) {
+      game->x_ball_orientation = 1;
+      if (game->settings.screen_width % 2 == 1)
+        ++game->ball_x;
       change_client_settings(game);
       int sock = -1;
       sock = net_client_init_sock(game->settings.port);
@@ -89,12 +92,13 @@ void offline_mode(struct Game *game) {
   while (true) {
     char ch1 = 0, ch2 = 0;
     while (!ch1 || !ch2) {
-      char c = getch();
-      if (!ch1 && c != 'j' && c != 'k')
-        ch1 = c;
-      else if (!ch2 && c != 'w' && c != 's')
-        ch2 = c;
+      int ch = getch();
+      if (!ch1 && IS_KEY_DOWN(ch) && IS_KEY_UP(ch))
+        ch1 = ch;
+      else if (!ch2 && ch != 'w' && ch != 's')
+        ch2 = ch;
     }
+
     flushinp();
 
     enum PlayerAction your_action, opponent_action;
