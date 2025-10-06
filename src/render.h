@@ -128,5 +128,6 @@ enum Gamemode loading_screen();
 void change_serve_settings(struct Game *game);
 void set_game_fields(struct Game *game);
 void change_client_settings(struct Game *game);
+void change_offline_settings(struct Game *game);
 
 #endif

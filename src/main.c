@@ -67,6 +67,7 @@ int main(int argc, char **argv) {
     } else if (gamemode == QUIT_PROGRAM) {
       break;
     } else if (gamemode == OFFLINE) {
+      change_offline_settings(game);
       offline_mode(game);
     } else {
       fprintf(stderr, "Gamemode not implemented yet\n");

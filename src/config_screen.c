@@ -20,6 +20,37 @@ struct SettingBox {
 
 static void change_settings(struct SettingBox *settings, int settings_count);
 
+void change_offline_settings(struct Game *game) {
+  struct SettingBox settings[] = {
+      {.setting_str = "Screen Height",
+       .setting_value_ptr = &game->settings.screen_height,
+       .setting_type = SETTING_UINT16},
+      {.setting_str = "Screen Width",
+       .setting_value_ptr = &game->settings.screen_width,
+       .setting_type = SETTING_UINT16},
+      {.setting_str = "Winning Score",
+       .setting_value_ptr = &game->settings.winning_score,
+       .setting_type = SETTING_UINT16},
+      {.setting_str = "Ball Speed",
+       .setting_value_ptr = &game->settings.ball_speed,
+       .setting_type = SETTING_UINT16},
+      {.setting_str = "FPS",
+       .setting_value_ptr = &game->settings.frames_per_second,
+       .setting_type = SETTING_UINT8},
+      {.setting_str = "Pad Tiles",
+       .setting_value_ptr = &game->settings.pad_tiles,
+       .setting_type = SETTING_UINT8},
+      {.setting_str = "Pad Char",
+       .setting_value_ptr = &game->settings.pad_char,
+       .setting_type = SETTING_CHAR},
+      {.setting_str = "Ball Char",
+       .setting_value_ptr = &game->settings.ball_char,
+       .setting_type = SETTING_CHAR},
+      {.setting_str = "Start",
+       .setting_value_ptr = NULL,
+       .setting_type = SETTING_NULL}};
+  change_settings(settings, sizeof(settings) / sizeof(settings[0]));
+}
 void change_serve_settings(struct Game *game) {
   struct SettingBox settings[] = {
       {.setting_str = "Screen Height",
