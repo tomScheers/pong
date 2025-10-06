@@ -1,6 +1,7 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
+#include <arpa/inet.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -13,6 +14,7 @@
 #define DEFAULT_FPS 60
 #define DEFAULT_PAD_TILES 3
 #define DEFAULT_PORT_NUM 6767
+#define DEFAULT_IP "127.0.0.1"
 
 #define ISCOLLIDING(ball_x, ball_y, plr_x, plr_y)                              \
   (ball_x == plr_x &&                                                          \
@@ -34,6 +36,12 @@ enum PlayerAction {
 };
 
 struct Settings {
+  /*
+   * ip_addr represents the ip address the client is connecting to
+   *
+   * ip_addr defaults to localhost
+   */
+  struct in_addr ip_addr;
   /*
    * screen_width and screen_height dictate the screen's dimensions.
    * screen_width can't be larger than COLS, or be smaller than 3.

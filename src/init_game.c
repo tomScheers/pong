@@ -13,7 +13,7 @@ void set_game_fields(struct Game *game) {
 
   game->plr_one.x = 1;
   game->plr_one.y = LINES / 2;
-  game->plr_two.x = COLS - 1;
+  game->plr_two.x = COLS - 2;
   game->plr_two.y = LINES / 2;
 
   game->plr_one.score = 0;
@@ -43,6 +43,7 @@ struct Game *init_game(char **args, size_t argc) {
   game->settings.program_version = PROGRAM_VERSION;
   game->settings.winning_score = DEFAULT_WINNING_SCORE;
   game->settings.port = DEFAULT_PORT_NUM;
+  inet_pton(AF_INET, DEFAULT_IP, &game->settings.ip_addr);
 
   initscr();
   nodelay(stdscr, TRUE);

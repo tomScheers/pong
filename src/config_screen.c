@@ -3,11 +3,13 @@
 #include <inttypes.h>
 #include <ncurses.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include <string.h>
 
 enum SettingTypes {
   SETTING_UINT8,
   SETTING_UINT16,
+  SETTING_IP4,
   SETTING_CHAR,
   SETTING_NULL,
 };
@@ -90,6 +92,9 @@ void change_client_settings(struct Game *game) {
   struct SettingBox settings[] = {{.setting_str = "Port Number",
                                    .setting_value_ptr = &game->settings.port,
                                    .setting_type = SETTING_UINT16},
+                                  {.setting_str = "IP Address",
+                                   .setting_value_ptr = &game->settings.ip_addr,
+                                   .setting_type = SETTING_IP4},
                                   {.setting_str = "Join",
                                    .setting_value_ptr = NULL,
                                    .setting_type = SETTING_NULL}};
@@ -102,6 +107,10 @@ static void change_settings(struct SettingBox *settings, int settings_count) {
   int start_y = height / 2 - settings_count / 2;
   int selected = 0;
   bool is_editing = false;
+
+  char ip4v_buf[INET_ADDRSTRLEN]; // Buffer if you need to change the ip address
+  inet_ntop(AF_INET, settings[selected].setting_value_ptr, ip4v_buf,
+            INET_ADDRSTRLEN);
 
   int ch;
   while (true) {
@@ -116,8 +125,12 @@ static void change_settings(struct SettingBox *settings, int settings_count) {
     if (ch == 'k' && selected > 0 && !is_editing)
       --selected;
 
-    if (ch == '\n')
+    if (ch == '\n') {
+      if (settings[selected].setting_type == SETTING_IP4 && is_editing) {
+        inet_pton(AF_INET, ip4v_buf, settings[selected].setting_value_ptr);
+      }
       is_editing = !is_editing;
+    }
 
     if (is_editing && ch != '\n' && ch != ERR) {
       if (settings[selected].setting_type == SETTING_CHAR) {
@@ -145,6 +158,16 @@ static void change_settings(struct SettingBox *settings, int settings_count) {
             value = UINT16_MAX;
         }
         *(uint16_t *)settings[selected].setting_value_ptr = (uint16_t)value;
+        erase();
+      } else if (settings[selected].setting_type == SETTING_IP4) {
+        size_t value_len = strlen(ip4v_buf);
+        if (ch == KEY_BACKSPACE || ch == 127 || ch == '\b') {
+          ip4v_buf[--value_len] = '\0';
+        } else if (((ch >= '0' && ch <= '9') || ch == '.') &&
+                   value_len < INET_ADDRSTRLEN) {
+          ip4v_buf[value_len++] = ch;
+          ip4v_buf[value_len] = '\0';
+        }
         erase();
       }
     }
@@ -179,6 +202,8 @@ static void change_settings(struct SettingBox *settings, int settings_count) {
       else if (settings[i].setting_type == SETTING_CHAR)
         mvwprintw(stdscr, setting_y, setting_value_x, "%c",
                   *(char *)settings[i].setting_value_ptr);
+      else if (settings[i].setting_type == SETTING_IP4)
+        mvwprintw(stdscr, setting_y, setting_value_x, "%s", ip4v_buf);
 
       if (selected == i && settings[i].setting_type != SETTING_NULL &&
           is_editing)

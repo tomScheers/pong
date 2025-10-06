@@ -61,6 +61,7 @@ int main(int argc, char **argv) {
       if (game->settings.screen_height > LINES) {
         game->settings.screen_height = LINES;
       }
+
       send(sock, &game->settings, sizeof(game->settings), 0);
       handle_connection(game, sock);
       close(sock);

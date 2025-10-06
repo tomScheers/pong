@@ -26,15 +26,14 @@ void render(struct Game *game, enum PlayerAction your_action,
       int next_y = game->ball_y + game->y_ball_orientation;
       int next_x = game->ball_x + game->x_ball_orientation;
 
-      if (ISCOLLIDING(game->ball_x, game->ball_y, game->plr_one.x,
-                      game->plr_one.y) ||
-          ISCOLLIDING(game->ball_x, game->ball_y, game->plr_two.x,
-                      game->plr_two.y)) {
+      if (ISCOLLIDING(next_x, next_y, game->plr_one.x, game->plr_one.y) ||
+          ISCOLLIDING(next_x, next_y, game->plr_two.x, game->plr_two.y)) {
         game->x_ball_orientation *= -1;
       }
     }
     game->ball_x += game->x_ball_orientation;
     game->ball_y += game->y_ball_orientation;
+    game->speed_ticks = 0;
   } else
     game->speed_ticks++;
 }
@@ -67,6 +66,6 @@ void draw_player(struct Game *game, enum PlayerAction your_action,
     break;
   }
   for (uint8_t i = 0; i < game->settings.pad_tiles; i++) {
-    mvaddch(game->plr_one.y + i, game->plr_one.x, game->settings.pad_char);
+    mvaddch(game->plr_two.y + i, game->plr_two.x, game->settings.pad_char);
   }
 }
