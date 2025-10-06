@@ -1,10 +1,25 @@
 #include "render.h"
 
+#include <ctype.h>
 #include <inttypes.h>
 #include <ncurses.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+
+#define IS_BACKSPACE(ch) (ch == KEY_BACKSPACE || ch == 127 || ch == '\b')
+
+#define PARSE_DIGIT(type, type_max)                                            \
+  int64_t value = *(type *)settings[selected].setting_value_ptr;               \
+  if (IS_BACKSPACE(ch)) {                                                      \
+    value /= 10;                                                               \
+  } else if (isdigit(ch)) {                                                    \
+    value = value * 10 + (ch - '0');                                           \
+    if (value > type_max)                                                      \
+      value = type_max;                                                        \
+  }                                                                            \
+  *(type *)settings[selected].setting_value_ptr = (type)value;                 \
+  erase();
 
 enum SettingTypes {
   SETTING_UINT8,
@@ -119,10 +134,10 @@ static void change_settings(struct SettingBox *settings, int settings_count) {
     if (ch == '\n' && settings[selected].setting_type == SETTING_NULL)
       break;
 
-    if (ch == 'j' && selected < settings_count - 1 && !is_editing)
+    if (IS_KEY_DOWN(ch) && selected < settings_count - 1 && !is_editing)
       ++selected;
 
-    if (ch == 'k' && selected > 0 && !is_editing)
+    if (IS_KEY_UP(ch) && selected > 0 && !is_editing)
       --selected;
 
     if (ch == '\n') {
@@ -138,33 +153,14 @@ static void change_settings(struct SettingBox *settings, int settings_count) {
         is_editing = false;
         erase();
       } else if (settings[selected].setting_type == SETTING_UINT8) {
-        uint16_t value = *(uint8_t *)settings[selected].setting_value_ptr;
-        if (ch == KEY_BACKSPACE || ch == 127 || ch == '\b') {
-          value /= 10;
-        } else if (ch >= '0' && ch <= '9') {
-          value = value * 10 + (ch - '0');
-          if (value > UINT8_MAX)
-            value = UINT8_MAX;
-        }
-        *(uint8_t *)settings[selected].setting_value_ptr = (uint8_t)value;
-        erase();
+        PARSE_DIGIT(uint8_t, UINT8_MAX);
       } else if (settings[selected].setting_type == SETTING_UINT16) {
-        uint32_t value = *(uint16_t *)settings[selected].setting_value_ptr;
-        if (ch == KEY_BACKSPACE || ch == 127 || ch == '\b') {
-          value /= 10;
-        } else if (ch >= '0' && ch <= '9') {
-          value = value * 10 + (ch - '0');
-          if (value > UINT16_MAX)
-            value = UINT16_MAX;
-        }
-        *(uint16_t *)settings[selected].setting_value_ptr = (uint16_t)value;
-        erase();
+        PARSE_DIGIT(uint16_t, UINT16_MAX);
       } else if (settings[selected].setting_type == SETTING_IP4) {
         size_t value_len = strlen(ip4v_buf);
-        if (ch == KEY_BACKSPACE || ch == 127 || ch == '\b') {
+        if (IS_BACKSPACE(ch)) {
           ip4v_buf[--value_len] = '\0';
-        } else if (((ch >= '0' && ch <= '9') || ch == '.') &&
-                   value_len < INET_ADDRSTRLEN) {
+        } else if ((isdigit(ch) || ch == '.') && value_len < INET_ADDRSTRLEN) {
           ip4v_buf[value_len++] = ch;
           ip4v_buf[value_len] = '\0';
         }

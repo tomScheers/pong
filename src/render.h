@@ -16,15 +16,16 @@
 #define DEFAULT_PORT_NUM 6767
 #define DEFAULT_IP "127.0.0.1"
 
-#define ISCOLLIDING(ball_x, ball_y, plr_x, plr_y)                              \
-  (ball_x == plr_x &&                                                          \
-   (ball_y <= plr_y && ball_y >= plr_y - game->settings.pad_tiles))
+#define IS_KEY_UP(ch) (ch == 'k' || ch == KEY_UP)
+#define IS_KEY_LEFT(ch) (ch == 'h' || ch == KEY_LEFT)
+#define IS_KEY_DOWN(ch) (ch == 'j' || ch == KEY_DOWN)
+#define IS_KEY_RIGHT(ch) (ch == 'l' || ch == KEY_RIGHT)
 
 enum Gamemode {
   SERVE,
   JOIN,
-  OFFLINE, // NOT IMPLEMENTED YET
-  BOT,     // NOT IMPLEMENTED YET
+  OFFLINE,
+  BOT, // NOT IMPLEMENTED YET
   QUIT_PROGRAM,
 };
 

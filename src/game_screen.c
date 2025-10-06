@@ -3,6 +3,10 @@
 #include <inttypes.h>
 #include <ncurses.h>
 
+#define ISCOLLIDING(ball_x, ball_y, plr_x, plr_y)                              \
+  (ball_x == plr_x &&                                                          \
+   (ball_y >= plr_y && ball_y < plr_y + game->settings.pad_tiles))
+
 static void draw_player(struct Game *game, struct Player *player,
                         enum PlayerAction player_action);
 
@@ -12,7 +16,6 @@ void render(struct Game *game, enum PlayerAction your_action,
 
   draw_player(game, &game->plr_one, your_action);
   draw_player(game, &game->plr_two, opponent_action);
-
   mvaddch(game->ball_y, game->ball_x, game->settings.ball_char);
   refresh();
 
@@ -21,18 +24,17 @@ void render(struct Game *game, enum PlayerAction your_action,
     if (game->ball_x == game->settings.screen_width || game->ball_x == 0) {
       game->x_ball_orientation *= -1;
     }
-
     if (game->ball_y == game->settings.screen_height || game->ball_y == 0) {
       game->y_ball_orientation *= -1;
+    }
 
-      // Check if next hit is going to be collision and adjust orientation
-      int next_y = game->ball_y + game->y_ball_orientation;
-      int next_x = game->ball_x + game->x_ball_orientation;
+    // Check if next hit is going to be collision and adjust orientation
+    int next_y = game->ball_y + game->y_ball_orientation;
+    int next_x = game->ball_x + game->x_ball_orientation;
 
-      if (ISCOLLIDING(next_x, next_y, game->plr_one.x, game->plr_one.y) ||
-          ISCOLLIDING(next_x, next_y, game->plr_two.x, game->plr_two.y)) {
-        game->x_ball_orientation *= -1;
-      }
+    if (ISCOLLIDING(next_x, next_y, game->plr_one.x, game->plr_one.y) ||
+        ISCOLLIDING(next_x, next_y, game->plr_two.x, game->plr_two.y)) {
+      game->x_ball_orientation *= -1;
     }
     game->ball_x += game->x_ball_orientation;
     game->ball_y += game->y_ball_orientation;
@@ -56,7 +58,7 @@ static void draw_player(struct Game *game, struct Player *player,
   default:
     break;
   }
-  for (uint8_t i = 0; i < game->settings.pad_tiles; i++) {
+
+  for (uint8_t i = 0; i < game->settings.pad_tiles; i++)
     mvaddch(player->y + i, player->x, game->settings.pad_char);
-  }
 }

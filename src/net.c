@@ -60,14 +60,12 @@ cleanup:
 }
 
 static enum PlayerAction handle_user_input(int ch) {
-  switch (ch) {
-  case 'q':
-    return QUIT_GAME;
-  case 'j':
-    return PAD_DOWN;
-  case 'k':
+  if (IS_KEY_UP(ch))
     return PAD_UP;
-  default:
+  else if (IS_KEY_DOWN(ch))
+    return PAD_DOWN;
+  else if (ch == 'q')
+    return QUIT_GAME;
+  else
     return NONE;
-  }
 }

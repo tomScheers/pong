@@ -4,7 +4,7 @@
 #include <string.h>
 
 enum Gamemode loading_screen() {
-  int height, width;
+  size_t height, width;
   getmaxyx(stdscr, height, width);
 
   uint8_t selected = 0;
@@ -17,22 +17,26 @@ enum Gamemode loading_screen() {
                              "| (      | |   | || | \\   || | \\_  )",
                              "| )      | (___) || )  \\  || (___) |",
                              "|/       (_______)|/    )_)(_______)"};
-  int pixel_art_height = sizeof(pixel_art) / sizeof(pixel_art[0]);
-  int pixel_art_width = strlen(pixel_art[0]);
+  uint16_t pixel_art_height = sizeof(pixel_art) / sizeof(pixel_art[0]);
+  uint16_t pixel_art_width = strlen(pixel_art[0]);
 
   const char *msgs[] = {"serve", "join", "offline", "bot", "quit"};
-  int msg_count = sizeof(msgs) / sizeof(msgs[0]);
+  size_t msg_count = sizeof(msgs) / sizeof(msgs[0]);
 
   int total_len = 0;
-  for (int i = 0; i < msg_count; ++i)
+  for (size_t i = 0; i < msg_count; ++i)
     total_len += strlen(msgs[i]);
 
-  int gaps = msg_count + 1;
-  int space = (width - total_len) / gaps;
+  uint16_t gap_amount = msg_count + 1;
+  uint16_t space_between_words = (width - total_len) / gap_amount;
 
-  int y = height / 2 + pixel_art_height / 2;
-  int pixel_art_y = height / 2 - pixel_art_height / 2 - pixel_art_height;
-  int pixel_art_x = (width - pixel_art_width) / 2;
+  uint16_t options_y =
+      height / 2 +
+      pixel_art_height /
+          2; // Get the middle of the screen accounting for the pixel art
+
+  uint16_t pixel_art_y = height / 2 - pixel_art_height / 2 - pixel_art_height;
+  uint16_t pixel_art_x = (width - pixel_art_width) / 2;
 
   int ch;
   while ((ch = getch()) != '\n') {
@@ -40,20 +44,23 @@ enum Gamemode loading_screen() {
       mvprintw(pixel_art_y + i, pixel_art_x, "%s", pixel_art[i]);
     }
 
-    if (ch == 'h' && selected > 0)
+    if (IS_KEY_LEFT(ch) && selected > 0)
       --selected;
-    if (ch == 'l' && selected < msg_count - 1)
+
+    if (IS_KEY_RIGHT(ch) && selected < msg_count - 1)
       ++selected;
-    int x = space;
-    for (int i = 0; i < msg_count; ++i) {
+
+    uint16_t option_x = space_between_words;
+
+    for (size_t i = 0; i < msg_count; ++i) {
       if (i == selected) {
         attron(A_REVERSE);
-        mvprintw(y, x, "%s", msgs[i]);
+        mvprintw(options_y, option_x, "%s", msgs[i]);
         attroff(A_REVERSE);
       } else {
-        mvprintw(y, x, "%s", msgs[i]);
+        mvprintw(options_y, option_x, "%s", msgs[i]);
       }
-      x += strlen(msgs[i]) + space;
+      option_x += strlen(msgs[i]) + space_between_words;
     }
     refresh();
   }
