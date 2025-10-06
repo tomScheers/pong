@@ -3,14 +3,17 @@
 #include <inttypes.h>
 #include <ncurses.h>
 
-static void draw_player(struct Game *game, enum PlayerAction your_action,
-                        enum PlayerAction opponent_action);
+static void draw_player(struct Game *game, struct Player *player,
+                        enum PlayerAction player_action);
 
 void render(struct Game *game, enum PlayerAction your_action,
             enum PlayerAction opponent_action) {
   erase();
-  draw_player(game, your_action, opponent_action);
-  mvaddch(game->ball_y, game->ball_x, '0');
+
+  draw_player(game, &game->plr_one, your_action);
+  draw_player(game, &game->plr_two, opponent_action);
+
+  mvaddch(game->ball_y, game->ball_x, game->settings.ball_char);
   refresh();
 
   if (game->speed_ticks ==
@@ -38,34 +41,22 @@ void render(struct Game *game, enum PlayerAction your_action,
     game->speed_ticks++;
 }
 
-void draw_player(struct Game *game, enum PlayerAction your_action,
-                 enum PlayerAction opponent_action) {
-  switch (your_action) {
+static void draw_player(struct Game *game, struct Player *player,
+                        enum PlayerAction player_action) {
+  switch (player_action) {
   case PAD_UP:
-    game->plr_one.y--;
+    if (player->y - 1 >= 0)
+      player->y--;
     break;
   case PAD_DOWN:
-    game->plr_one.y++;
+    if (player->y + game->settings.pad_tiles < game->settings.screen_height)
+      player->y++;
     break;
   case NONE:
   default:
     break;
   }
   for (uint8_t i = 0; i < game->settings.pad_tiles; i++) {
-    mvaddch(game->plr_one.y + i, game->plr_one.x, game->settings.pad_char);
-  }
-  switch (opponent_action) {
-  case PAD_UP:
-    game->plr_two.y--;
-    break;
-  case PAD_DOWN:
-    game->plr_two.y++;
-    break;
-  case NONE:
-  default:
-    break;
-  }
-  for (uint8_t i = 0; i < game->settings.pad_tiles; i++) {
-    mvaddch(game->plr_two.y + i, game->plr_two.x, game->settings.pad_char);
+    mvaddch(player->y + i, player->x, game->settings.pad_char);
   }
 }
