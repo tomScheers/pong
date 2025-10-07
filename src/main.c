@@ -1,6 +1,7 @@
 #include <ncurses.h>
 #include <stdlib.h>
 #include <sys/time.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "net.h"
@@ -91,17 +92,23 @@ int main(int argc, char **argv) {
 void offline_mode(struct Game *game) {
   while (true) {
     char ch1 = 0, ch2 = 0;
-    while (!ch1 || !ch2) {
+
+    clock_t start = time(NULL);
+
+    while (difftime(time(NULL), start) <
+               1.0 / game->settings.frames_per_second &&
+           (!ch1 || !ch2)) {
       int ch = getch();
-      if (!ch1 && IS_KEY_DOWN(ch) && IS_KEY_UP(ch))
+      if (!ch1 && !IS_KEY_DOWN(ch) && !IS_KEY_UP(ch))
         ch1 = ch;
-      else if (!ch2 && ch != 'w' && ch != 's')
+      else if (!ch2)
         ch2 = ch;
     }
 
     flushinp();
 
     enum PlayerAction your_action, opponent_action;
+
     switch (ch1) {
     case 'w':
       your_action = PAD_UP;

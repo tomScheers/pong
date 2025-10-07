@@ -1,7 +1,7 @@
 PROGRAM := pong
 CC := clang
 CFLAGS := -Wall -Wextra -O3 -std=c23
-LDFLAGS := -lncurses
+LDFLAGS := -lncurses -lm
 
 SRC := $(wildcard src/*.c)
 OBJ := $(patsubst src/%.c, build/%.o, $(SRC))
