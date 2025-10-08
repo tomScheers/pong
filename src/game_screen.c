@@ -1,11 +1,12 @@
 #include "render.h"
 
 #include <inttypes.h>
+#include <math.h>
 #include <ncurses.h>
 
 #define ISCOLLIDING(ball_x, ball_y, plr_x, plr_y)                              \
-  (ball_x == plr_x &&                                                          \
-   (ball_y >= plr_y && ball_y < plr_y + game->settings.pad_tiles))
+  (fabs(floor(ball_x) - plr_x) < EPSILON && (int)ball_y >= plr_y &&            \
+   (int)ball_y < plr_y + game->settings.pad_tiles)
 
 static void draw_player(struct Game *game, struct Player *player,
                         enum PlayerAction player_action);
@@ -14,33 +15,40 @@ void render(struct Game *game, enum PlayerAction your_action,
             enum PlayerAction opponent_action) {
   erase();
 
+  printw("%f, %f\n", game->ball_x, game->ball_y);
   draw_player(game, &game->plr_one, your_action);
   draw_player(game, &game->plr_two, opponent_action);
-  mvaddch(game->ball_y, game->ball_x, game->settings.ball_char);
+  mvaddch((int)game->ball_y, (int)game->ball_x, game->settings.ball_char);
   refresh();
 
-  if (game->speed_ticks ==
+  if (game->speed_ticks !=
       game->settings.frames_per_second / game->settings.ball_speed) {
-    if (game->ball_x == game->settings.screen_width || game->ball_x == 0) {
-      game->x_ball_orientation *= -1;
-    }
-    if (game->ball_y == game->settings.screen_height || game->ball_y == 0) {
-      game->y_ball_orientation *= -1;
-    }
-
-    // Check if next hit is going to be collision and adjust orientation
-    int next_y = game->ball_y + game->y_ball_orientation;
-    int next_x = game->ball_x + game->x_ball_orientation;
-
-    if (ISCOLLIDING(next_x, next_y, game->plr_one.x, game->plr_one.y) ||
-        ISCOLLIDING(next_x, next_y, game->plr_two.x, game->plr_two.y)) {
-      game->x_ball_orientation *= -1;
-    }
-    game->ball_x += game->x_ball_orientation;
-    game->ball_y += game->y_ball_orientation;
-    game->speed_ticks = 0;
-  } else
     game->speed_ticks++;
+    return;
+  }
+
+  if (fabs(floor(game->ball_x) - game->settings.screen_width) < EPSILON ||
+      game->ball_x <= EPSILON) {
+    game->x_ball_orientation *= -1;
+  }
+
+  if (fabs(floor(game->ball_y) - game->settings.screen_height) < EPSILON ||
+      game->ball_y <= EPSILON) {
+    game->y_ball_orientation *= -1;
+  }
+
+  // Check if next hit is going to be collision and adjust orientation
+  float next_ball_y = game->ball_y + game->y_ball_orientation;
+  float next_ball_x = game->ball_x + game->x_ball_orientation;
+
+  if (ISCOLLIDING(next_ball_x, next_ball_y, game->plr_one.x, game->plr_one.y) ||
+      ISCOLLIDING(next_ball_x, next_ball_y, game->plr_two.x, game->plr_two.y)) {
+    game->x_ball_orientation *= -1;
+  }
+
+  game->ball_x += game->x_ball_orientation;
+  game->ball_y += game->y_ball_orientation;
+  game->speed_ticks = 0;
 }
 
 static void draw_player(struct Game *game, struct Player *player,

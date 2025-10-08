@@ -19,10 +19,10 @@ void set_game_fields(struct Game *game) {
   game->plr_one.score = 0;
   game->plr_two.score = 0;
 
-  game->ball_y = game->settings.screen_height / 2 + 5;
-  game->ball_x = game->settings.screen_width / 2;
+  game->ball_y = (float)((int)(game->settings.screen_height / 2)) + 5;
+  game->ball_x = (float)game->settings.screen_width / 2;
   game->x_ball_orientation = -1;
-  game->y_ball_orientation = -1;
+  game->y_ball_orientation = -0.5;
 }
 
 struct Game *init_game(char **args, size_t argc) {

@@ -31,6 +31,7 @@ enum SettingTypes {
 
 struct SettingBox {
   const char *setting_str;
+  const char *setting_description;
   void *setting_value_ptr;
   enum SettingTypes setting_type;
 };
@@ -40,27 +41,38 @@ static void change_settings(struct SettingBox *settings, int settings_count);
 void change_offline_settings(struct Game *game) {
   struct SettingBox settings[] = {
       {.setting_str = "Screen Height",
+       .setting_description = "Adjusts the height of the pong window",
        .setting_value_ptr = &game->settings.screen_height,
        .setting_type = SETTING_UINT16},
       {.setting_str = "Screen Width",
+       .setting_description = "Adjusts the width of the pong window",
        .setting_value_ptr = &game->settings.screen_width,
        .setting_type = SETTING_UINT16},
       {.setting_str = "Winning Score",
+       .setting_description = "Adjusts the score either one of the parties has "
+                              "to reach for them to win the game",
        .setting_value_ptr = &game->settings.winning_score,
        .setting_type = SETTING_UINT16},
       {.setting_str = "Ball Speed",
+       .setting_description = "Adjusts the speed at which the ball moves",
        .setting_value_ptr = &game->settings.ball_speed,
        .setting_type = SETTING_UINT16},
       {.setting_str = "FPS",
+       .setting_description =
+           "Adjusts at how many frames per second the game will run",
        .setting_value_ptr = &game->settings.frames_per_second,
        .setting_type = SETTING_UINT8},
       {.setting_str = "Pad Tiles",
+       .setting_description =
+           "Adjusts how many characters high the pads of both players will be",
        .setting_value_ptr = &game->settings.pad_tiles,
        .setting_type = SETTING_UINT8},
       {.setting_str = "Pad Char",
+       .setting_description = "Dictates what char will be used for the pads",
        .setting_value_ptr = &game->settings.pad_char,
        .setting_type = SETTING_CHAR},
       {.setting_str = "Ball Char",
+       .setting_description = "Dictates what char will be used for the ball",
        .setting_value_ptr = &game->settings.ball_char,
        .setting_type = SETTING_CHAR},
       {.setting_str = "Start",
@@ -71,30 +83,42 @@ void change_offline_settings(struct Game *game) {
 void change_serve_settings(struct Game *game) {
   struct SettingBox settings[] = {
       {.setting_str = "Screen Height",
+       .setting_description = "Adjusts the height of the pong window",
        .setting_value_ptr = &game->settings.screen_height,
        .setting_type = SETTING_UINT16},
       {.setting_str = "Screen Width",
+       .setting_description = "Adjusts the width of the pong window",
        .setting_value_ptr = &game->settings.screen_width,
        .setting_type = SETTING_UINT16},
       {.setting_str = "Port Number",
+       .setting_description = "Adjusts on which port the program will run",
        .setting_value_ptr = &game->settings.port,
        .setting_type = SETTING_UINT16},
       {.setting_str = "Winning Score",
+       .setting_description = "Adjusts the score either one of the parties has "
+                              "to reach for them to win the game",
        .setting_value_ptr = &game->settings.winning_score,
        .setting_type = SETTING_UINT16},
       {.setting_str = "Ball Speed",
+       .setting_description = "Adjusts the speed at which the ball moves",
        .setting_value_ptr = &game->settings.ball_speed,
        .setting_type = SETTING_UINT16},
       {.setting_str = "FPS",
+       .setting_description =
+           "Adjusts at how many frames per second the game will run",
        .setting_value_ptr = &game->settings.frames_per_second,
        .setting_type = SETTING_UINT8},
       {.setting_str = "Pad Tiles",
+       .setting_description =
+           "Adjusts how many characters high the pads of both players will be",
        .setting_value_ptr = &game->settings.pad_tiles,
        .setting_type = SETTING_UINT8},
       {.setting_str = "Pad Char",
+       .setting_description = "Dictates what char will be used for the pads",
        .setting_value_ptr = &game->settings.pad_char,
        .setting_type = SETTING_CHAR},
       {.setting_str = "Ball Char",
+       .setting_description = "Dictates what char will be used for the ball",
        .setting_value_ptr = &game->settings.ball_char,
        .setting_type = SETTING_CHAR},
       {.setting_str = "Start",
@@ -104,15 +128,20 @@ void change_serve_settings(struct Game *game) {
 }
 
 void change_client_settings(struct Game *game) {
-  struct SettingBox settings[] = {{.setting_str = "Port Number",
-                                   .setting_value_ptr = &game->settings.port,
-                                   .setting_type = SETTING_UINT16},
-                                  {.setting_str = "IP Address",
-                                   .setting_value_ptr = &game->settings.ip_addr,
-                                   .setting_type = SETTING_IP4},
-                                  {.setting_str = "Join",
-                                   .setting_value_ptr = NULL,
-                                   .setting_type = SETTING_NULL}};
+  struct SettingBox settings[] = {
+      {.setting_str = "Port Number",
+       .setting_description =
+           "Dictates on what port the client will connect to the server",
+       .setting_value_ptr = &game->settings.port,
+       .setting_type = SETTING_UINT16},
+      {.setting_str = "IP Address",
+       .setting_description =
+           "IP address of the machine you wanna join the game of",
+       .setting_value_ptr = &game->settings.ip_addr,
+       .setting_type = SETTING_IP4},
+      {.setting_str = "Join",
+       .setting_value_ptr = NULL,
+       .setting_type = SETTING_NULL}};
   change_settings(settings, sizeof(settings) / sizeof(settings[0]));
 }
 
@@ -131,16 +160,18 @@ static void change_settings(struct SettingBox *settings, int settings_count) {
   while (true) {
     ch = getch();
 
-    if (ch == '\n' && settings[selected].setting_type == SETTING_NULL)
+    if (ch == '\n' && settings[selected].setting_type == SETTING_NULL) {
       break;
-
-    if (IS_KEY_DOWN(ch) && selected < settings_count - 1 && !is_editing)
+    } else if (IS_KEY_DOWN(ch) && selected < settings_count - 1 &&
+               !is_editing) {
       ++selected;
-
-    if (IS_KEY_UP(ch) && selected > 0 && !is_editing)
+      erase();
+      refresh();
+    } else if (IS_KEY_UP(ch) && selected > 0 && !is_editing) {
       --selected;
-
-    if (ch == '\n') {
+      erase();
+      refresh();
+    } else if (ch == '\n') {
       if (settings[selected].setting_type == SETTING_IP4 && is_editing) {
         inet_pton(AF_INET, ip4v_buf, settings[selected].setting_value_ptr);
       }
@@ -166,16 +197,22 @@ static void change_settings(struct SettingBox *settings, int settings_count) {
         }
         erase();
       }
+      refresh();
+    }
+
+    if (settings[selected].setting_type != SETTING_NULL) {
+      uint16_t x = (width - strlen(settings[selected].setting_description)) / 2;
+      mvprintw(start_y - 2, x, "%s", settings[selected].setting_description);
     }
 
     for (int i = 0; i < settings_count; ++i) {
       int setting_x = width / 2 - strlen(settings[i].setting_str) - 1;
+      int setting_y = start_y + i;
 
       if (settings[i].setting_type == SETTING_NULL)
-        setting_x = width / 2 - strlen(settings[i].setting_str) / 2 - 1;
+        setting_x = (width - strlen(settings[i].setting_str)) / 2 - 1;
 
       int setting_value_x = width / 2 + 1;
-      int setting_y = start_y + i;
 
       if (selected == i)
         attron(A_REVERSE);

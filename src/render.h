@@ -21,6 +21,8 @@
 #define IS_KEY_DOWN(ch) (ch == 'j' || ch == KEY_DOWN)
 #define IS_KEY_RIGHT(ch) (ch == 'l' || ch == KEY_RIGHT)
 
+#define EPSILON 1e-9
+
 enum Gamemode {
   SERVE,
   JOIN,
@@ -122,10 +124,10 @@ struct Game {
   struct Player plr_one;
   struct Player plr_two;
   struct Settings settings;
-  uint16_t ball_x;
-  uint16_t ball_y;
-  int8_t x_ball_orientation;
-  int8_t y_ball_orientation;
+  float x_ball_orientation;
+  float y_ball_orientation;
+  float ball_x;
+  float ball_y;
   uint8_t speed_ticks;
   bool running;
 };
