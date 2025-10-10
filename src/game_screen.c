@@ -15,7 +15,12 @@ void render(struct Game *game, enum PlayerAction your_action,
             enum PlayerAction opponent_action) {
   erase();
 
-  printw("%f, %f\n", game->ball_x, game->ball_y);
+  mvprintw(GAME_Y_OFFSET, 0, "%f, %f\n", game->ball_x, game->ball_y);
+  mvprintw(GAME_Y_OFFSET - 2, game->settings.screen_width / 2 - 3,
+           "%" PRIu16 "\n", game->plr_one.score);
+  mvprintw(GAME_Y_OFFSET - 2, game->settings.screen_width / 2 + 3,
+           "%" PRIu16 "\n", game->plr_two.score);
+
   draw_player(game, &game->plr_one, your_action);
   draw_player(game, &game->plr_two, opponent_action);
   mvaddch((int)game->ball_y, (int)game->ball_x, game->settings.ball_char);
@@ -27,13 +32,24 @@ void render(struct Game *game, enum PlayerAction your_action,
     return;
   }
 
-  if (fabs(floor(game->ball_x) - game->settings.screen_width) < EPSILON ||
-      game->ball_x <= EPSILON) {
-    game->x_ball_orientation *= -1;
+  if (fabs(floor(game->ball_x) - game->settings.screen_width) < EPSILON) {
+    game->plr_one.score++;
+    game->ball_y =
+        (float)((int)(game->settings.screen_height / 2 + GAME_Y_OFFSET));
+    game->ball_x = (float)game->settings.screen_width / 2;
+  } else if (game->ball_x <= EPSILON) {
+    game->plr_two.score++;
+    game->ball_y =
+        (float)((int)(game->settings.screen_height / 2 + GAME_Y_OFFSET));
+    game->ball_x = (float)game->settings.screen_width / 2;
   }
 
-  if (fabs(floor(game->ball_y) - game->settings.screen_height) < EPSILON ||
-      game->ball_y <= EPSILON) {
+  if (game->plr_one.score == game->settings.winning_score){
+    game->running = false;
+  } else if (game->plr_two.score == game->settings.winning_score) {}
+
+  if (fabs(floor(game->ball_y) - (game->settings.screen_height)) < EPSILON ||
+      game->ball_y <= EPSILON + GAME_Y_OFFSET) {
     game->y_ball_orientation *= -1;
   }
 

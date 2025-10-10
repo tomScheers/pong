@@ -22,6 +22,7 @@
 #define IS_KEY_RIGHT(ch) (ch == 'l' || ch == KEY_RIGHT)
 
 #define EPSILON 1e-9
+#define GAME_Y_OFFSET 5
 
 enum Gamemode {
   SERVE,
@@ -140,5 +141,6 @@ void change_serve_settings(struct Game *game);
 void set_game_fields(struct Game *game);
 void change_client_settings(struct Game *game);
 void change_offline_settings(struct Game *game);
+void end_game(struct Game *game, enum Gamemode mode);
 
 #endif

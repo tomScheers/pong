@@ -12,14 +12,15 @@ void set_game_fields(struct Game *game) {
   game->speed_ticks = 0;
 
   game->plr_one.x = 1;
-  game->plr_one.y = LINES / 2;
+  game->plr_one.y = LINES / 2 + GAME_Y_OFFSET;
   game->plr_two.x = COLS - 2;
-  game->plr_two.y = LINES / 2;
+  game->plr_two.y = LINES / 2 + GAME_Y_OFFSET;
 
   game->plr_one.score = 0;
   game->plr_two.score = 0;
 
-  game->ball_y = (float)((int)(game->settings.screen_height / 2)) + 5;
+  game->ball_y =
+      (float)((int)(game->settings.screen_height / 2 + GAME_Y_OFFSET));
   game->ball_x = (float)game->settings.screen_width / 2;
   game->x_ball_orientation = -1;
   game->y_ball_orientation = -0.5;
