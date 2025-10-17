@@ -8,8 +8,8 @@ enum Gamemode loading_screen() {
   size_t height, width;
   getmaxyx(stdscr, height, width);
 
-  uint8_t selected = 0;
-  uint8_t selected_option = selected;
+  uint8_t selected_author = 0;
+  uint8_t selected_option = 0;
   bool is_selecting_author = false;
 
   static const char *pixel_art[] = {" _______  _______  _        _______ ",
@@ -73,11 +73,12 @@ enum Gamemode loading_screen() {
     uint16_t author_x = (width - author_print_size) / 2;
 
     for (uint16_t i = 0; i < author_amount; ++i) {
-      if (is_selecting_author && i == selected)
+      if (is_selecting_author && i == selected_author && is_selecting_author)
         attron(A_REVERSE);
 
       mvprintw(author_y, author_x, "%s", authors[i]);
-      if (is_selecting_author && i == selected)
+
+      if (is_selecting_author && i == selected_author && is_selecting_author)
         attroff(A_REVERSE);
 
       author_x += strlen(authors[i]);
@@ -95,31 +96,35 @@ enum Gamemode loading_screen() {
 
     if (ch == '\n' && is_selecting_author) {
       char cmd[256];
-      snprintf(cmd, sizeof(cmd), "xdg-open \"%s\"", author_links[selected]);
+      snprintf(cmd, sizeof(cmd), "xdg-open \"%s\"",
+               author_links[selected_author]);
       system(cmd);
     }
 
-    if (IS_KEY_LEFT(ch) && selected > 0)
-      --selected;
+    if (IS_KEY_LEFT(ch) && selected_option > 0 && !is_selecting_author)
+      --selected_option;
 
-    if (IS_KEY_RIGHT(ch) && selected < options_count - 1)
-      ++selected;
+    else if (IS_KEY_LEFT(ch) && selected_author > 0 && is_selecting_author)
+      --selected_author;
 
-    if (IS_KEY_UP(ch) && !is_selecting_author) {
+    else if (IS_KEY_RIGHT(ch) && selected_option < options_count - 1 &&
+             !is_selecting_author)
+      ++selected_option;
+
+    else if (IS_KEY_RIGHT(ch) && selected_author < author_amount - 1 &&
+             is_selecting_author)
+      ++selected_author;
+
+    else if (IS_KEY_UP(ch) && !is_selecting_author)
       is_selecting_author = !is_selecting_author;
-      selected_option = selected;
-      selected = (float)selected / options_count * author_amount;
-    }
 
-    if (IS_KEY_DOWN(ch) && is_selecting_author) {
+    else if (IS_KEY_DOWN(ch) && is_selecting_author)
       is_selecting_author = !is_selecting_author;
-      selected = selected_option;
-    }
 
     uint16_t option_x = space_between_words;
 
     for (size_t i = 0; i < options_count; ++i) {
-      if (!is_selecting_author && i == selected) {
+      if (!is_selecting_author && i == selected_option) {
         attron(A_REVERSE);
         mvprintw(options_y, option_x, "%s", options[i]);
         attroff(A_REVERSE);
@@ -132,5 +137,5 @@ enum Gamemode loading_screen() {
   }
   erase();
   refresh();
-  return selected;
+  return selected_option;
 }
