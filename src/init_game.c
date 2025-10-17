@@ -44,7 +44,9 @@ struct Game *init_game(char **args, size_t argc) {
   game->settings.program_version = PROGRAM_VERSION;
   game->settings.winning_score = DEFAULT_WINNING_SCORE;
   game->settings.port = DEFAULT_PORT_NUM;
-  inet_pton(AF_INET, DEFAULT_IP, &game->settings.ip_addr);
+
+  for (int i = 0; i < 4; ++i)
+    game->settings.ip_octets[i] = 0;
 
   initscr();
   nodelay(stdscr, TRUE);

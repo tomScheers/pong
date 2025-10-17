@@ -53,7 +53,11 @@ int main(int argc, char **argv) {
         ++game->ball_x;
       change_client_settings(game);
       int sock = -1;
-      sock = net_client_init_sock(game->settings.port);
+      uint32_t packed_ip_address = (game->settings.ip_octets[0] << 24) |
+                                   (game->settings.ip_octets[1] << 16) |
+                                   (game->settings.ip_octets[2] << 8) |
+                                   game->settings.ip_octets[3];
+      sock = net_client_init_sock(game->settings.port, packed_ip_address);
       if (sock == -1) {
         perror("net_client_init_sock");
         break;

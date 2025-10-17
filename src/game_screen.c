@@ -44,10 +44,6 @@ void render(struct Game *game, enum PlayerAction your_action,
     game->ball_x = (float)game->settings.screen_width / 2;
   }
 
-  if (game->plr_one.score == game->settings.winning_score){
-    game->running = false;
-  } else if (game->plr_two.score == game->settings.winning_score) {}
-
   if (fabs(floor(game->ball_y) - (game->settings.screen_height)) < EPSILON ||
       game->ball_y <= EPSILON + GAME_Y_OFFSET) {
     game->y_ball_orientation *= -1;

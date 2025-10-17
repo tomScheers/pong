@@ -4,7 +4,6 @@
 #include <inttypes.h>
 #include <ncurses.h>
 #include <stdbool.h>
-#include <stdlib.h>
 #include <string.h>
 
 #define IS_BACKSPACE(ch) (ch == KEY_BACKSPACE || ch == 127 || ch == '\b')
@@ -137,7 +136,7 @@ void change_client_settings(struct Game *game) {
       {.setting_str = "IP Address",
        .setting_description =
            "IP address of the machine you wanna join the game of",
-       .setting_value_ptr = &game->settings.ip_addr,
+       .setting_value_ptr = game->settings.ip_octets,
        .setting_type = SETTING_IP4},
       {.setting_str = "Join",
        .setting_value_ptr = NULL,
@@ -150,11 +149,8 @@ static void change_settings(struct SettingBox *settings, int settings_count) {
   getmaxyx(stdscr, height, width);
   int start_y = height / 2 - settings_count / 2;
   int selected = 0;
+  int selected_octet = 0;
   bool is_editing = false;
-
-  char ip4v_buf[INET_ADDRSTRLEN]; // Buffer if you need to change the ip address
-  inet_ntop(AF_INET, settings[selected].setting_value_ptr, ip4v_buf,
-            INET_ADDRSTRLEN);
 
   int ch;
   while (true) {
@@ -171,11 +167,26 @@ static void change_settings(struct SettingBox *settings, int settings_count) {
       --selected;
       erase();
       refresh();
-    } else if (ch == '\n') {
-      if (settings[selected].setting_type == SETTING_IP4 && is_editing) {
-        inet_pton(AF_INET, ip4v_buf, settings[selected].setting_value_ptr);
-      }
+    } else if ((ch == '\n' && (settings[selected].setting_type != SETTING_IP4 ||
+                               !is_editing)) ||
+               selected_octet > 3) {
       is_editing = !is_editing;
+      selected_octet = 0;
+    } else if (IS_KEY_LEFT(ch) &&
+               settings[selected].setting_type == SETTING_IP4 &&
+               selected_octet > 0) {
+      --selected_octet;
+    } else if (IS_KEY_RIGHT(ch) &&
+               settings[selected].setting_type == SETTING_IP4 &&
+               selected_octet < 3) {
+      ++selected_octet;
+    } else if (ch == '\n' && settings[selected].setting_type == SETTING_IP4 &&
+               is_editing) {
+      ++selected_octet;
+      if (selected_octet > 3) {
+        selected_octet = 0;
+        is_editing = false;
+      }
     }
 
     if (is_editing && ch != '\n' && ch != ERR) {
@@ -188,13 +199,20 @@ static void change_settings(struct SettingBox *settings, int settings_count) {
       } else if (settings[selected].setting_type == SETTING_UINT16) {
         PARSE_DIGIT(uint16_t, UINT16_MAX);
       } else if (settings[selected].setting_type == SETTING_IP4) {
-        size_t value_len = strlen(ip4v_buf);
+        int16_t value =
+            *(uint8_t *)(settings[selected].setting_value_ptr + selected_octet);
         if (IS_BACKSPACE(ch)) {
-          ip4v_buf[--value_len] = '\0';
-        } else if ((isdigit(ch) || ch == '.') && value_len < INET_ADDRSTRLEN) {
-          ip4v_buf[value_len++] = ch;
-          ip4v_buf[value_len] = '\0';
+          value /= 10;
+        } else if (isdigit(ch)) {
+          value = value * 10 + (ch - '0');
+
+          if (value > UINT8_MAX)
+            value = UINT8_MAX;
         }
+
+        *(uint8_t *)(settings[selected].setting_value_ptr + selected_octet) =
+            (uint8_t)value;
+
         erase();
       }
       refresh();
@@ -223,7 +241,7 @@ static void change_settings(struct SettingBox *settings, int settings_count) {
         attroff(A_REVERSE);
 
       if (selected == i && settings[i].setting_type != SETTING_NULL &&
-          is_editing)
+          settings[i].setting_type != SETTING_IP4 && is_editing)
         attron(A_REVERSE);
 
       if (settings[i].setting_type == SETTING_UINT16)
@@ -235,11 +253,19 @@ static void change_settings(struct SettingBox *settings, int settings_count) {
       else if (settings[i].setting_type == SETTING_CHAR)
         mvwprintw(stdscr, setting_y, setting_value_x, "%c",
                   *(char *)settings[i].setting_value_ptr);
-      else if (settings[i].setting_type == SETTING_IP4)
-        mvwprintw(stdscr, setting_y, setting_value_x, "%s", ip4v_buf);
+      else if (settings[i].setting_type == SETTING_IP4) {
+        for (int j = 0; j < 4; ++j) {
+          if (j == selected_octet && i == selected && is_editing)
+            attron(A_REVERSE);
+          mvwprintw(stdscr, setting_y, setting_value_x + j * 4, "%" PRIu8,
+                    *(uint8_t *)(settings[i].setting_value_ptr + j));
+          if (j == selected_octet && i == selected && is_editing)
+            attroff(A_REVERSE);
+        }
+      }
 
       if (selected == i && settings[i].setting_type != SETTING_NULL &&
-          is_editing)
+          settings[i].setting_type != SETTING_IP4 && is_editing)
         attroff(A_REVERSE);
     }
     refresh();

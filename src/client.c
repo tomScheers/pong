@@ -3,7 +3,7 @@
 #include <netinet/in.h>
 #include <unistd.h>
 
-int net_client_init_sock(int port) {
+int net_client_init_sock(int port, uint32_t ip_address) {
   int client_sock = socket(AF_INET, SOCK_STREAM, 0);
   if (client_sock == -1)
     return -1;
@@ -11,7 +11,7 @@ int net_client_init_sock(int port) {
 
   serv_addr.sin_family = AF_INET;
   serv_addr.sin_port = htons(port);
-  serv_addr.sin_addr.s_addr = INADDR_ANY;
+  serv_addr.sin_addr.s_addr = htonl(ip_address);
 
   int connect_status =
       connect(client_sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr));

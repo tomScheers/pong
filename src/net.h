@@ -12,7 +12,7 @@ struct DataMsg {
 };
 
 int net_serv_init_sock(int port); // Returns server socket
-int net_client_init_sock(int port);
+int net_client_init_sock(int port, uint32_t ip_address);
 int net_serv_conn_client(int listening_sock);
 int net_client_conn_serv(
     int client_sock); // Connects to a server, returns server socket
