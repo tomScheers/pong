@@ -27,7 +27,6 @@ int main(int argc, char **argv) {
     if (gamemode == SERVE) {
       int sock = -1;
       change_serve_settings(game);
-      set_game_fields(game);
       int serv_sock = net_serv_init_sock(game->settings.port);
 
       if (serv_sock == -1) {
@@ -46,6 +45,7 @@ int main(int argc, char **argv) {
 
       send(sock, &game->settings, sizeof(game->settings), 0);
       recv(sock, &game->settings, sizeof(game->settings), 0);
+      set_game_fields(game);
       handle_connection(game, sock);
       close(sock);
     } else if (gamemode == JOIN) {
@@ -53,7 +53,6 @@ int main(int argc, char **argv) {
       if (game->settings.screen_width % 2 == 1)
         ++game->ball_x;
       change_client_settings(game);
-      set_game_fields(game);
       int sock = -1;
       uint32_t packed_ip_address = (game->settings.ip_octets[0] << 24) |
                                    (game->settings.ip_octets[1] << 16) |
@@ -71,6 +70,7 @@ int main(int argc, char **argv) {
       if (game->settings.screen_height > LINES) {
         game->settings.screen_height = LINES;
       }
+      set_game_fields(game);
 
       send(sock, &game->settings, sizeof(game->settings), 0);
       handle_connection(game, sock);

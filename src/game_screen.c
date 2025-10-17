@@ -26,12 +26,12 @@ void draw_border(int y1, int x1, int y2, int x2) {
   }
 
   // Draw horizontal lines
-  mvhline(y1, x1, ACS_HLINE, x2 - x1);
-  mvhline(y2, x1, ACS_HLINE, x2 - x1);
+  mvhline(y1, x1, ACS_HLINE, x2 - x1 + 1);
+  mvhline(y2, x1, ACS_HLINE, x2 - x1 + 1);
 
   // Draw vertical lines
-  mvvline(y1, x1, ACS_VLINE, y2 - y1);
-  mvvline(y1, x2, ACS_VLINE, y2 - y1);
+  mvvline(y1, x1, ACS_VLINE, y2 - y1 + 1);
+  mvvline(y1, x2, ACS_VLINE, y2 - y1 + 1);
 
   // Draw corners
   mvaddch(y1, x1, ACS_ULCORNER);
