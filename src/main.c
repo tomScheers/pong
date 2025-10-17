@@ -27,6 +27,7 @@ int main(int argc, char **argv) {
     if (gamemode == SERVE) {
       int sock = -1;
       change_serve_settings(game);
+      set_game_fields(game);
       int serv_sock = net_serv_init_sock(game->settings.port);
 
       if (serv_sock == -1) {
@@ -52,6 +53,7 @@ int main(int argc, char **argv) {
       if (game->settings.screen_width % 2 == 1)
         ++game->ball_x;
       change_client_settings(game);
+      set_game_fields(game);
       int sock = -1;
       uint32_t packed_ip_address = (game->settings.ip_octets[0] << 24) |
                                    (game->settings.ip_octets[1] << 16) |
@@ -77,6 +79,7 @@ int main(int argc, char **argv) {
       break;
     } else if (gamemode == OFFLINE) {
       change_offline_settings(game);
+      set_game_fields(game);
       offline_mode(game);
     } else {
       fprintf(stderr, "Gamemode not implemented yet\n");

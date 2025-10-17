@@ -11,16 +11,15 @@ void set_game_fields(struct Game *game) {
   game->running = true;
   game->speed_ticks = 0;
 
-  game->plr_one.x = 1;
-  game->plr_one.y = LINES / 2 + GAME_Y_OFFSET;
-  game->plr_two.x = COLS - 2;
-  game->plr_two.y = LINES / 2 + GAME_Y_OFFSET;
+  game->plr_one.x = 0;
+  game->plr_one.y = game->settings.screen_height / 2;
+  game->plr_two.x = game->settings.screen_width - 1;
+  game->plr_two.y = game->settings.screen_height / 2;
 
   game->plr_one.score = 0;
   game->plr_two.score = 0;
 
-  game->ball_y =
-      (float)((int)(game->settings.screen_height / 2 + GAME_Y_OFFSET));
+  game->ball_y = (float)((int)(game->settings.screen_height / 2));
   game->ball_x = (float)game->settings.screen_width / 2;
   game->x_ball_orientation = -1;
   game->y_ball_orientation = -0.5;
@@ -34,8 +33,6 @@ struct Game *init_game(char **args, size_t argc) {
   if (!parse_args(game, args, argc))
     return NULL;
 
-  game->settings.screen_height = 0;
-  game->settings.screen_width = 0;
   game->settings.ball_char = DEFAULT_BALL_CHAR;
   game->settings.pad_char = DEFAULT_PAD_CHAR;
   game->settings.ball_speed = DEFAULT_BALL_SPEED;
@@ -55,14 +52,8 @@ struct Game *init_game(char **args, size_t argc) {
   noecho();
   curs_set(0);
 
-  if (game->settings.screen_height == 0 ||
-      game->settings.screen_height > LINES) {
-    game->settings.screen_height = LINES;
-  }
-
-  if (game->settings.screen_width == 0 || game->settings.screen_width > COLS) {
-    game->settings.screen_width = COLS;
-  }
+  game->settings.screen_height = LINES - 4;
+  game->settings.screen_width = COLS - 4;
 
   set_game_fields(game);
 
