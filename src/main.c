@@ -49,7 +49,6 @@ int main(int argc, char **argv) {
       handle_connection(game, sock);
       close(sock);
     } else if (gamemode == JOIN) {
-      game->x_ball_orientation = 1;
       if (game->settings.screen_width % 2 == 1)
         ++game->ball_x;
       change_client_settings(game);
@@ -64,13 +63,14 @@ int main(int argc, char **argv) {
         break;
       }
       recv(sock, &game->settings, sizeof(game->settings), 0);
-      if (game->settings.screen_width > COLS) {
-        game->settings.screen_width = COLS;
+      if (game->settings.screen_width > COLS - 2) {
+        game->settings.screen_width = COLS - 2;
       }
-      if (game->settings.screen_height > LINES) {
-        game->settings.screen_height = LINES;
+      if (game->settings.screen_height > LINES - 2) {
+        game->settings.screen_height = LINES - 2;
       }
       set_game_fields(game);
+      game->x_ball_orientation *= -1;
 
       send(sock, &game->settings, sizeof(game->settings), 0);
       handle_connection(game, sock);
