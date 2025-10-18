@@ -134,6 +134,7 @@ enum Gamemode loading_screen() {
       option_x += strlen(options[i]) + space_between_words;
     }
     refresh();
+    napms(10);
   }
   erase();
   refresh();

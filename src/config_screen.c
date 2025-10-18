@@ -35,14 +35,17 @@ struct SettingBox {
   enum SettingTypes setting_type;
 };
 
-static void change_settings(struct SettingBox *settings, int settings_count);
+static void change_settings(struct Game *game, struct SettingBox *settings,
+                            int settings_count);
 
 void change_offline_settings(struct Game *game) {
   struct SettingBox settings[] = {
-      {.setting_str = "Screen Height",
-       .setting_description = "Adjusts the height of the pong window",
-       .setting_value_ptr = &game->settings.screen_height,
-       .setting_type = SETTING_UINT16},
+      {
+          .setting_str = "Screen Height",
+          .setting_description = "Adjusts the height of the pong window",
+          .setting_value_ptr = &game->settings.screen_height,
+          .setting_type = SETTING_UINT16,
+      },
       {.setting_str = "Screen Width",
        .setting_description = "Adjusts the width of the pong window",
        .setting_value_ptr = &game->settings.screen_width,
@@ -55,7 +58,7 @@ void change_offline_settings(struct Game *game) {
       {.setting_str = "Ball Speed",
        .setting_description = "Adjusts the speed at which the ball moves",
        .setting_value_ptr = &game->settings.ball_speed,
-       .setting_type = SETTING_UINT16},
+       .setting_type = SETTING_UINT8},
       {.setting_str = "FPS",
        .setting_description =
            "Adjusts at how many frames per second the game will run",
@@ -77,7 +80,7 @@ void change_offline_settings(struct Game *game) {
       {.setting_str = "Start",
        .setting_value_ptr = NULL,
        .setting_type = SETTING_NULL}};
-  change_settings(settings, sizeof(settings) / sizeof(settings[0]));
+  change_settings(game, settings, sizeof(settings) / sizeof(settings[0]));
 }
 void change_serve_settings(struct Game *game) {
   struct SettingBox settings[] = {
@@ -101,7 +104,7 @@ void change_serve_settings(struct Game *game) {
       {.setting_str = "Ball Speed",
        .setting_description = "Adjusts the speed at which the ball moves",
        .setting_value_ptr = &game->settings.ball_speed,
-       .setting_type = SETTING_UINT16},
+       .setting_type = SETTING_UINT8},
       {.setting_str = "FPS",
        .setting_description =
            "Adjusts at how many frames per second the game will run",
@@ -123,7 +126,7 @@ void change_serve_settings(struct Game *game) {
       {.setting_str = "Start",
        .setting_value_ptr = NULL,
        .setting_type = SETTING_NULL}};
-  change_settings(settings, sizeof(settings) / sizeof(settings[0]));
+  change_settings(game, settings, sizeof(settings) / sizeof(settings[0]));
 }
 
 void change_client_settings(struct Game *game) {
@@ -141,10 +144,11 @@ void change_client_settings(struct Game *game) {
       {.setting_str = "Join",
        .setting_value_ptr = NULL,
        .setting_type = SETTING_NULL}};
-  change_settings(settings, sizeof(settings) / sizeof(settings[0]));
+  change_settings(game, settings, sizeof(settings) / sizeof(settings[0]));
 }
 
-static void change_settings(struct SettingBox *settings, int settings_count) {
+static void change_settings(struct Game *game, struct SettingBox *settings,
+                            int settings_count) {
   int height, width;
   getmaxyx(stdscr, height, width);
   int start_y = height / 2 - settings_count / 2;
@@ -172,6 +176,37 @@ static void change_settings(struct SettingBox *settings, int settings_count) {
                selected_octet > 3) {
       is_editing = !is_editing;
       selected_octet = 0;
+      if (game->settings.screen_height < game->settings.pad_tiles)
+        game->settings.pad_tiles = game->settings.screen_height;
+
+      if (game->settings.screen_height > LINES - 2)
+        game->settings.screen_height = LINES - 2;
+
+      if (game->settings.screen_width > COLS - 2)
+        game->settings.screen_width = COLS - 2;
+
+      if (game->settings.screen_width < 5)
+        game->settings.screen_width = 5;
+
+      if (game->settings.screen_height < 5)
+        game->settings.screen_height = 5;
+
+      if (game->settings.ball_speed < 1)
+        game->settings.ball_speed = 1;
+
+      if (game->settings.pad_tiles > game->settings.screen_height)
+        game->settings.pad_tiles = game->settings.screen_height;
+
+      if (game->settings.pad_tiles < 1)
+        game->settings.pad_tiles = 1;
+
+      if (game->settings.frames_per_second < 1)
+        game->settings.frames_per_second = 1;
+
+      if (game->settings.ball_speed > game->settings.frames_per_second)
+        game->settings.ball_speed = game->settings.frames_per_second;
+
+      erase();
     } else if (IS_KEY_LEFT(ch) &&
                settings[selected].setting_type == SETTING_IP4 &&
                selected_octet > 0) {
@@ -215,6 +250,7 @@ static void change_settings(struct SettingBox *settings, int settings_count) {
 
         erase();
       }
+
       refresh();
     }
 
@@ -269,6 +305,7 @@ static void change_settings(struct SettingBox *settings, int settings_count) {
         attroff(A_REVERSE);
     }
     refresh();
+    napms(10);
   }
   erase();
   refresh();

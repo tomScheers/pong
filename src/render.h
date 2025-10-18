@@ -9,7 +9,7 @@
 #define PROGRAM_VERSION 0.0
 #define DEFAULT_PAD_CHAR '|'
 #define DEFAULT_BALL_CHAR '0'
-#define DEFAULT_WINNING_SCORE 0
+#define DEFAULT_WINNING_SCORE 10
 #define DEFAULT_BALL_SPEED 20
 #define DEFAULT_FPS 60
 #define DEFAULT_PAD_TILES 3
@@ -78,7 +78,7 @@ struct Settings {
    * The ball_speed is capped to the FPS of the program, which naturally is
    * capped towards the network speed.
    */
-  uint16_t ball_speed;
+  uint8_t ball_speed;
 
   /*
    * frames_per_second is the FPS the program will target for.
