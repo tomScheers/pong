@@ -23,6 +23,11 @@
 #define EPSILON 1e-9
 #define GAME_Y_OFFSET 5
 
+#define MIN_SCREEN_HEIGHT 5
+#define MIN_SCREEN_WIDTH 5
+#define MAX_SCREEN_HEIGHT LINES - 6
+#define MAX_SCREEN_WIDTH COLS - 2
+
 enum Gamemode {
   SERVE,
   JOIN,
@@ -142,5 +147,9 @@ void set_game_fields(struct Game *game);
 void change_client_settings(struct Game *game);
 void change_offline_settings(struct Game *game);
 void end_game(struct Game *game, enum Gamemode mode);
+const char *get_ascii_char(char ch);
+void server_loading_screen(struct Game *game);
+void print_ascii(uint16_t y, const char *text);
+size_t get_char_len(char ch);
 
 #endif

@@ -12,14 +12,7 @@ enum Gamemode loading_screen() {
   uint8_t selected_option = 0;
   bool is_selecting_author = false;
 
-  static const char *pixel_art[] = {" _______  _______  _        _______ ",
-                                    "(  ____ )(  ___  )( (    /|(  ____ \\",
-                                    "| (    )|| (   ) ||  \\  ( || (    \\/",
-                                    "| (____)|| |   | ||   \\ | || |      ",
-                                    "|  _____)| |   | || (\\ \\) || | ____ ",
-                                    "| (      | |   | || | \\   || | \\_  )",
-                                    "| )      | (___) || )  \\  || (___) |",
-                                    "|/       (_______)|/    )_)(_______)"};
+  static const char *pixel_art_text = "p0ng";
 
   static const char *authors[] = {"tomScheers", "code-redmark"};
   static const char *author_links[] = {"https://github.com/tomScheers",
@@ -28,10 +21,8 @@ enum Gamemode loading_screen() {
   static const char *options[] = {"serve", "join", "offline", "bot", "quit"};
 
   // Get pixel_art variable
-  uint16_t pixel_art_height = sizeof(pixel_art) / sizeof(pixel_art[0]);
-  uint16_t pixel_art_width = strlen(pixel_art[0]);
+  uint16_t pixel_art_height = 8;
   uint16_t pixel_art_y = (height - pixel_art_height) / 2 - pixel_art_height;
-  uint16_t pixel_art_x = (width - pixel_art_width) / 2;
 
   // Get author variables
   uint16_t author_amount = sizeof(authors) / sizeof(authors[0]);
@@ -65,9 +56,8 @@ enum Gamemode loading_screen() {
 
   int ch;
   while ((ch = getch()) != '\n' || is_selecting_author) {
-    for (int i = 0; i < pixel_art_height; ++i) {
-      mvprintw(pixel_art_y + i, pixel_art_x, "%s", pixel_art[i]);
-    }
+    print_ascii(pixel_art_y, pixel_art_text);
+
     uint16_t author_y =
         pixel_art_y + pixel_art_height * 1.25; // 1.25 is magic number
     uint16_t author_x = (width - author_print_size) / 2;

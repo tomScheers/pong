@@ -36,7 +36,7 @@ struct SettingBox {
 };
 
 static void change_settings(struct Game *game, struct SettingBox *settings,
-                            int settings_count);
+                            int settings_count, const char *config_msg);
 
 void change_offline_settings(struct Game *game) {
   struct SettingBox settings[] = {
@@ -80,7 +80,8 @@ void change_offline_settings(struct Game *game) {
       {.setting_str = "Start",
        .setting_value_ptr = NULL,
        .setting_type = SETTING_NULL}};
-  change_settings(game, settings, sizeof(settings) / sizeof(settings[0]));
+  change_settings(game, settings, sizeof(settings) / sizeof(settings[0]),
+                  "offline config");
 }
 void change_serve_settings(struct Game *game) {
   struct SettingBox settings[] = {
@@ -126,7 +127,8 @@ void change_serve_settings(struct Game *game) {
       {.setting_str = "Start",
        .setting_value_ptr = NULL,
        .setting_type = SETTING_NULL}};
-  change_settings(game, settings, sizeof(settings) / sizeof(settings[0]));
+  change_settings(game, settings, sizeof(settings) / sizeof(settings[0]),
+                  "server config");
 }
 
 void change_client_settings(struct Game *game) {
@@ -144,11 +146,12 @@ void change_client_settings(struct Game *game) {
       {.setting_str = "Join",
        .setting_value_ptr = NULL,
        .setting_type = SETTING_NULL}};
-  change_settings(game, settings, sizeof(settings) / sizeof(settings[0]));
+  change_settings(game, settings, sizeof(settings) / sizeof(settings[0]),
+                  "client config");
 }
 
 static void change_settings(struct Game *game, struct SettingBox *settings,
-                            int settings_count) {
+                            int settings_count, const char *config_msg) {
   int height, width;
   getmaxyx(stdscr, height, width);
   int start_y = height / 2 - settings_count / 2;
@@ -179,17 +182,17 @@ static void change_settings(struct Game *game, struct SettingBox *settings,
       if (game->settings.screen_height < game->settings.pad_tiles)
         game->settings.pad_tiles = game->settings.screen_height;
 
-      if (game->settings.screen_height > LINES - 2)
-        game->settings.screen_height = LINES - 2;
+      if (game->settings.screen_height > MAX_SCREEN_HEIGHT)
+        game->settings.screen_height = MAX_SCREEN_HEIGHT;
 
-      if (game->settings.screen_width > COLS - 2)
-        game->settings.screen_width = COLS - 2;
+      if (game->settings.screen_width > MAX_SCREEN_WIDTH)
+        game->settings.screen_width = MAX_SCREEN_WIDTH;
 
-      if (game->settings.screen_width < 5)
-        game->settings.screen_width = 5;
+      if (game->settings.screen_width < MIN_SCREEN_WIDTH)
+        game->settings.screen_width = MIN_SCREEN_WIDTH;
 
-      if (game->settings.screen_height < 5)
-        game->settings.screen_height = 5;
+      if (game->settings.screen_height < MIN_SCREEN_HEIGHT)
+        game->settings.screen_height = MIN_SCREEN_HEIGHT;
 
       if (game->settings.ball_speed < 1)
         game->settings.ball_speed = 1;
@@ -223,6 +226,8 @@ static void change_settings(struct Game *game, struct SettingBox *settings,
         is_editing = false;
       }
     }
+
+    print_ascii(start_y / 2, config_msg);
 
     if (is_editing && ch != '\n' && ch != ERR) {
       if (settings[selected].setting_type == SETTING_CHAR) {
@@ -271,7 +276,7 @@ static void change_settings(struct Game *game, struct SettingBox *settings,
       if (selected == i)
         attron(A_REVERSE);
 
-      mvwprintw(stdscr, setting_y, setting_x, "%s", settings[i].setting_str);
+      mvprintw(setting_y, setting_x, "%s", settings[i].setting_str);
 
       if (selected == i)
         attroff(A_REVERSE);
@@ -281,20 +286,20 @@ static void change_settings(struct Game *game, struct SettingBox *settings,
         attron(A_REVERSE);
 
       if (settings[i].setting_type == SETTING_UINT16)
-        mvwprintw(stdscr, setting_y, setting_value_x, "%" PRIu16,
-                  *(uint16_t *)settings[i].setting_value_ptr);
+        mvprintw(setting_y, setting_value_x, "%" PRIu16,
+                 *(uint16_t *)settings[i].setting_value_ptr);
       else if (settings[i].setting_type == SETTING_UINT8)
-        mvwprintw(stdscr, setting_y, setting_value_x, "%" PRIu8,
-                  *(uint8_t *)settings[i].setting_value_ptr);
+        mvprintw(setting_y, setting_value_x, "%" PRIu8,
+                 *(uint8_t *)settings[i].setting_value_ptr);
       else if (settings[i].setting_type == SETTING_CHAR)
-        mvwprintw(stdscr, setting_y, setting_value_x, "%c",
-                  *(char *)settings[i].setting_value_ptr);
+        mvprintw(setting_y, setting_value_x, "%c",
+                 *(char *)settings[i].setting_value_ptr);
       else if (settings[i].setting_type == SETTING_IP4) {
         for (int j = 0; j < 4; ++j) {
           if (j == selected_octet && i == selected && is_editing)
             attron(A_REVERSE);
-          mvwprintw(stdscr, setting_y, setting_value_x + j * 4, "%" PRIu8,
-                    *(uint8_t *)(settings[i].setting_value_ptr + j));
+          mvprintw(setting_y, setting_value_x + j * 4, "%" PRIu8,
+                   *(uint8_t *)(settings[i].setting_value_ptr + j));
           if (j == selected_octet && i == selected && is_editing)
             attroff(A_REVERSE);
         }

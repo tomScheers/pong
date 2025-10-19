@@ -1,5 +1,11 @@
+#include <arpa/inet.h>
+#include <ifaddrs.h>
+#include <inttypes.h>
+#include <math.h>
 #include <ncurses.h>
+#include <netinet/in.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
@@ -27,6 +33,7 @@ int main(int argc, char **argv) {
     if (gamemode == SERVE) {
       int sock = -1;
       change_serve_settings(game);
+      server_loading_screen(game);
       int serv_sock = net_serv_init_sock(game->settings.port);
 
       if (serv_sock == -1) {

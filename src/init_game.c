@@ -52,8 +52,8 @@ struct Game *init_game(char **args, size_t argc) {
   noecho();
   curs_set(0);
 
-  game->settings.screen_height = LINES - 4;
-  game->settings.screen_width = COLS - 4;
+  game->settings.screen_height = MAX_SCREEN_HEIGHT;
+  game->settings.screen_width = MAX_SCREEN_WIDTH;
 
   set_game_fields(game);
 

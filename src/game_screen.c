@@ -44,8 +44,20 @@ void render(struct Game *game, enum PlayerAction your_action,
             enum PlayerAction opponent_action) {
   erase();
 
-  mvprintw(2, COLS / 2 - 3, "%" PRIu16 "\n", game->plr_one.score);
-  mvprintw(2, COLS / 2 + 3, "%" PRIu16 "\n", game->plr_two.score);
+  size_t border_x1 = (COLS + game->settings.screen_width) / 2;
+  size_t border_x2 = (COLS - game->settings.screen_width) / 2 - 1;
+  size_t border_y1 = (LINES + game->settings.screen_height) / 2;
+  size_t border_y2 = (LINES - game->settings.screen_height) / 2 - 1;
+
+  if (game->settings.screen_height < LINES - 16) {
+    char score[16];
+    snprintf(score, sizeof(score), "%" PRIu16 "  %" PRIu16, game->plr_one.score,
+             game->plr_two.score);
+    print_ascii(0, score);
+  } else {
+    mvprintw(1, COLS / 2 - 3, "%" PRIu16, game->plr_one.score);
+    mvprintw(1, COLS / 2 + 3, "%" PRIu16, game->plr_two.score);
+  }
 
   int x_offset = (COLS - game->settings.screen_width) / 2;
   int y_offset = (LINES - game->settings.screen_height) / 2;
@@ -57,10 +69,7 @@ void render(struct Game *game, enum PlayerAction your_action,
           (int)game->ball_x + (COLS - game->settings.screen_width) / 2,
           game->settings.ball_char);
 
-  draw_border((LINES - game->settings.screen_height) / 2 - 1,
-              (COLS - game->settings.screen_width) / 2 - 1,
-              (LINES + game->settings.screen_height) / 2,
-              (COLS + game->settings.screen_width) / 2);
+  draw_border(border_y1, border_x1, border_y2, border_x2);
 
   refresh();
 

@@ -52,7 +52,10 @@ void handle_connection(struct Game *game, int sock) {
       render(game, data->action, rec_data->action);
     }
 
-    napms(1000 / game->settings.frames_per_second);
+    if (game->settings.frames_per_second > 0)
+      napms(1000 / game->settings.frames_per_second);
+    else
+      napms(50);
   }
 cleanup:
   free(rec_data);
