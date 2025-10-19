@@ -39,8 +39,15 @@ enum Gamemode {
 enum PlayerAction {
   NONE,
   QUIT_GAME,
+  PAUSE_GAME,
   PAD_DOWN,
   PAD_UP,
+};
+
+enum PauseOptions {
+  PO_HOME,
+  PO_RESUME,
+  PO_QUIT,
 };
 
 struct Settings {
@@ -151,5 +158,7 @@ const char *get_ascii_char(char ch);
 void server_loading_screen(struct Game *game);
 void print_ascii(uint16_t y, const char *text);
 size_t get_char_len(char ch);
+enum PauseOptions pause_screen();
+enum PauseOptions pause_screen_net(int sock);
 
 #endif

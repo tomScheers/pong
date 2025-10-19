@@ -104,7 +104,7 @@ int main(int argc, char **argv) {
 }
 
 void offline_mode(struct Game *game) {
-  while (true) {
+  while (game->running) {
     char ch1 = 0, ch2 = 0;
 
     clock_t start = time(NULL);
@@ -133,6 +133,9 @@ void offline_mode(struct Game *game) {
     case 'q':
       your_action = QUIT_GAME;
       break;
+    case 'p':
+      your_action = PAUSE_GAME;
+      break;
     default:
       your_action = NONE;
       break;
@@ -148,6 +151,9 @@ void offline_mode(struct Game *game) {
     case 'q':
       opponent_action = QUIT_GAME;
       break;
+    case 'p':
+      your_action = PAUSE_GAME;
+      break;
     default:
       opponent_action = NONE;
       break;
@@ -156,9 +162,23 @@ void offline_mode(struct Game *game) {
     if (your_action == QUIT_GAME || opponent_action == QUIT_GAME) {
       game->running = false;
       break;
+    } else if (your_action == PAUSE_GAME || opponent_action == PAUSE_GAME) {
+      enum PauseOptions option = pause_screen();
+      switch (option) {
+      case PO_QUIT:
+        game->running = false;
+        exit(0);
+      case PO_HOME:
+        game->running = false;
+        break;
+      case PO_RESUME:
+      default:
+        break;
+      }
     }
 
-    render(game, your_action, opponent_action);
+    if (game->running)
+      render(game, your_action, opponent_action);
     napms(1000 / game->settings.frames_per_second);
   }
 }

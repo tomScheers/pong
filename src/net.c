@@ -48,6 +48,39 @@ void handle_connection(struct Game *game, int sock) {
 
     if (rec_data->action == QUIT_GAME || data->action == QUIT_GAME) {
       game->running = false;
+    } else if (rec_data->action == PAUSE_GAME || data->action == PAUSE_GAME) {
+      enum PauseOptions option = pause_screen_net(sock);
+      enum PauseOptions rec_opt;
+
+      if (send(sock, &option, sizeof(option), 0) == -1) {
+        perror("net_send_msg");
+        goto cleanup;
+      }
+
+      switch (option) {
+      case PO_QUIT:
+        game->running = false;
+        if (send(sock, &option, sizeof(option), 0) == -1) {
+          perror("net_send_msg");
+          goto cleanup;
+        }
+        break;
+      case PO_HOME:
+        game->running = false;
+        if (send(sock, &option, sizeof(option), 0) == -1) {
+          perror("net_send_msg");
+          goto cleanup;
+        }
+        break;
+      case PO_RESUME:
+        if (recv(sock, &rec_opt, sizeof(rec_opt), 0) == -1) {
+          perror("net_recv_msg");
+          goto cleanup;
+        }
+        if (rec_opt == PO_QUIT || rec_opt == PO_HOME)
+          game->running = false;
+        break;
+      }
     } else {
       render(game, data->action, rec_data->action);
     }
@@ -69,6 +102,8 @@ static enum PlayerAction handle_user_input(int ch) {
     return PAD_DOWN;
   else if (ch == 'q')
     return QUIT_GAME;
+  else if (ch == 'p')
+    return PAUSE_GAME;
   else
     return NONE;
 }
