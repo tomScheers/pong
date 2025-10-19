@@ -28,6 +28,8 @@
 #define MAX_SCREEN_HEIGHT LINES - 6
 #define MAX_SCREEN_WIDTH COLS - 2
 
+#define ASCII_LINE_HEIGHT 8
+
 enum Gamemode {
   SERVE,
   JOIN,
@@ -160,5 +162,6 @@ void print_ascii(uint16_t y, const char *text);
 size_t get_char_len(char ch);
 enum PauseOptions pause_screen();
 enum PauseOptions pause_screen_net(int sock);
+void offline_mode(struct Game *game);
 
 #endif
