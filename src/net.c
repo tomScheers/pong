@@ -18,7 +18,7 @@ int net_send_msg(int opp_sock, struct DataMsg *data) {
   return send(opp_sock, data, sizeof(*data), 0);
 }
 
-void handle_connection(struct Game *game, int sock) {
+void net_game_handle(struct Game *game, int sock) {
   struct DataMsg *data = malloc(sizeof(*data));
   if (!data) {
     perror("malloc");
@@ -46,9 +46,10 @@ void handle_connection(struct Game *game, int sock) {
       goto cleanup;
     }
 
-    if (rec_data->action == QUIT_GAME || data->action == QUIT_GAME) {
+    if (rec_data->action == PA_QUIT_GAME || data->action == PA_QUIT_GAME) {
       game->running = false;
-    } else if (rec_data->action == PAUSE_GAME || data->action == PAUSE_GAME) {
+    } else if (rec_data->action == PA_PAUSE_GAME ||
+               data->action == PA_PAUSE_GAME) {
       enum PauseOptions option = pause_screen_net(sock);
       enum PauseOptions rec_opt;
 
@@ -97,13 +98,13 @@ cleanup:
 
 static enum PlayerAction handle_user_input(int ch) {
   if (IS_KEY_UP(ch))
-    return PAD_UP;
+    return PA_PAD_UP;
   else if (IS_KEY_DOWN(ch))
-    return PAD_DOWN;
+    return PA_PAD_DOWN;
   else if (ch == 'q')
-    return QUIT_GAME;
+    return PA_QUIT_GAME;
   else if (ch == 'p')
-    return PAUSE_GAME;
+    return PA_PAUSE_GAME;
   else
-    return NONE;
+    return PA_NONE;
 }

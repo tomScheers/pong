@@ -20,6 +20,6 @@ int net_recv_msg(int opp_sock,
                  struct DataMsg *ret_msg); // Passes down the ret_msg directly
                                            // to avoid unnecessary reallocation
 int net_send_msg(int opp_sock, struct DataMsg *data);
-void handle_connection(struct Game *game, int sock);
+void net_game_handle(struct Game *game, int sock);
 
 #endif

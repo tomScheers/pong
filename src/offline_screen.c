@@ -26,44 +26,45 @@ void offline_mode(struct Game *game) {
 
     switch (ch1) {
     case 'w':
-      your_action = PAD_UP;
+      your_action = PA_PAD_UP;
       break;
     case 's':
-      your_action = PAD_DOWN;
+      your_action = PA_PAD_DOWN;
       break;
     case 'q':
-      your_action = QUIT_GAME;
+      your_action = PA_QUIT_GAME;
       break;
     case 'p':
-      your_action = PAUSE_GAME;
+      your_action = PA_PAUSE_GAME;
       break;
     default:
-      your_action = NONE;
+      your_action = PA_NONE;
       break;
     }
 
     switch (ch2) {
     case 'k':
-      opponent_action = PAD_UP;
+      opponent_action = PA_PAD_UP;
       break;
     case 'j':
-      opponent_action = PAD_DOWN;
+      opponent_action = PA_PAD_DOWN;
       break;
     case 'q':
-      opponent_action = QUIT_GAME;
+      opponent_action = PA_QUIT_GAME;
       break;
     case 'p':
-      your_action = PAUSE_GAME;
+      your_action = PA_PAUSE_GAME;
       break;
     default:
-      opponent_action = NONE;
+      opponent_action = PA_NONE;
       break;
     }
 
-    if (your_action == QUIT_GAME || opponent_action == QUIT_GAME) {
+    if (your_action == PA_QUIT_GAME || opponent_action == PA_QUIT_GAME) {
       game->running = false;
       break;
-    } else if (your_action == PAUSE_GAME || opponent_action == PAUSE_GAME) {
+    } else if (your_action == PA_PAUSE_GAME ||
+               opponent_action == PA_PAUSE_GAME) {
       enum PauseOptions option = pause_screen();
       switch (option) {
       case PO_QUIT:

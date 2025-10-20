@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
   while (true) {
     enum Gamemode gamemode = loading_screen();
 
-    if (gamemode == SERVE) {
+    if (gamemode == GM_SERVE) {
       int sock = -1;
       change_serve_settings(game);
       server_loading_screen(game);
@@ -48,9 +48,9 @@ int main(int argc, char **argv) {
       send(sock, &game->settings, sizeof(game->settings), 0);
       recv(sock, &game->settings, sizeof(game->settings), 0);
       set_game_fields(game);
-      handle_connection(game, sock);
+      net_game_handle(game, sock);
       close(sock);
-    } else if (gamemode == JOIN) {
+    } else if (gamemode == GM_JOIN) {
       if (game->settings.screen_width % 2 == 1)
         ++game->ball_x;
       change_client_settings(game);
@@ -75,11 +75,11 @@ int main(int argc, char **argv) {
       game->x_ball_orientation *= -1;
 
       send(sock, &game->settings, sizeof(game->settings), 0);
-      handle_connection(game, sock);
+      net_game_handle(game, sock);
       close(sock);
-    } else if (gamemode == QUIT_PROGRAM) {
+    } else if (gamemode == GM_QUIT) {
       break;
-    } else if (gamemode == OFFLINE) {
+    } else if (gamemode == GM_OFFLINE) {
       change_offline_settings(game);
       set_game_fields(game);
       offline_mode(game);

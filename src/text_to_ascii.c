@@ -4,7 +4,7 @@
 #include <ncurses.h>
 #include <string.h>
 
-size_t get_char_len(char ch) {
+size_t get_ascii_char_len(char ch) {
   switch (ch) {
   case '.':
   case ',':
@@ -28,7 +28,7 @@ size_t get_char_len(char ch) {
 size_t get_ascii_text_width(const char *str) {
   size_t sum = 0;
   for (const char *c = str; *c != '\0'; c++) {
-    sum += get_char_len(*c);
+    sum += get_ascii_char_len(*c);
   }
   return sum;
 }
@@ -40,15 +40,15 @@ void print_ascii(uint16_t y, const char *text) {
     size_t start = i;
 
     // measure how many chars fit on this line
-    while (text[i] && line_len + get_char_len(text[i]) < (size_t)COLS)
-      line_len += get_char_len(text[i++]);
+    while (text[i] && line_len + get_ascii_char_len(text[i]) < (size_t)COLS)
+      line_len += get_ascii_char_len(text[i++]);
 
     size_t x_cursor = (COLS - line_len) / 2;
 
     // render that line
     for (size_t j = start; j < i; ++j) {
       const char *ascii = get_ascii_char(text[j]);
-      size_t char_w = get_char_len(text[j]);
+      size_t char_w = get_ascii_char_len(text[j]);
       size_t row = y_offset, col = 0;
 
       for (const char *c = ascii; *c; ++c) {

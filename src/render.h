@@ -31,19 +31,19 @@
 #define ASCII_LINE_HEIGHT 8
 
 enum Gamemode {
-  SERVE,
-  JOIN,
-  OFFLINE,
-  BOT, // NOT IMPLEMENTED YET
-  QUIT_PROGRAM,
+  GM_SERVE,
+  GM_JOIN,
+  GM_OFFLINE,
+  GM_BOT, // NOT IMPLEMENTED YET
+  GM_QUIT,
 };
 
 enum PlayerAction {
-  NONE,
-  QUIT_GAME,
-  PAUSE_GAME,
-  PAD_DOWN,
-  PAD_UP,
+  PA_NONE,
+  PA_QUIT_GAME,
+  PA_PAUSE_GAME,
+  PA_PAD_DOWN,
+  PA_PAD_UP,
 };
 
 enum PauseOptions {
@@ -159,7 +159,7 @@ void end_game(struct Game *game, enum Gamemode mode);
 const char *get_ascii_char(char ch);
 void server_loading_screen(struct Game *game);
 void print_ascii(uint16_t y, const char *text);
-size_t get_char_len(char ch);
+size_t get_ascii_char_len(char ch);
 enum PauseOptions pause_screen();
 enum PauseOptions pause_screen_net(int sock);
 void offline_mode(struct Game *game);

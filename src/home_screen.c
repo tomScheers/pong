@@ -15,7 +15,8 @@ enum Gamemode loading_screen() {
                                        "https://github.com/code-redmark"};
 
   static const char *options[] = {"serve", "join", "offline", "bot", "quit"};
-  enum Gamemode option_value[] = {SERVE, JOIN, OFFLINE, BOT, QUIT_PROGRAM};
+  enum Gamemode option_value[] = {GM_SERVE, GM_JOIN, GM_OFFLINE, GM_BOT,
+                                  GM_QUIT};
 
   uint8_t selected_author = 0;
   uint8_t selected_option = 0;

@@ -12,33 +12,7 @@ static void draw_player(struct Game *game, struct Player *player,
                         enum PlayerAction player_action, size_t offset_y,
                         size_t offset_x);
 
-void draw_border(int y1, int x1, int y2, int x2) {
-  // Ensure top-left and bottom-right ordering
-  if (y1 > y2) {
-    int tmp = y1;
-    y1 = y2;
-    y2 = tmp;
-  }
-  if (x1 > x2) {
-    int tmp = x1;
-    x1 = x2;
-    x2 = tmp;
-  }
-
-  // Draw horizontal lines
-  mvhline(y1, x1, ACS_HLINE, x2 - x1 + 1);
-  mvhline(y2, x1, ACS_HLINE, x2 - x1 + 1);
-
-  // Draw vertical lines
-  mvvline(y1, x1, ACS_VLINE, y2 - y1 + 1);
-  mvvline(y1, x2, ACS_VLINE, y2 - y1 + 1);
-
-  // Draw corners
-  mvaddch(y1, x1, ACS_ULCORNER);
-  mvaddch(y1, x2, ACS_URCORNER);
-  mvaddch(y2, x1, ACS_LLCORNER);
-  mvaddch(y2, x2, ACS_LRCORNER);
-}
+static void draw_border(int y1, int x1, int y2, int x2);
 
 void render(struct Game *game, enum PlayerAction your_action,
             enum PlayerAction opponent_action) {
@@ -80,12 +54,12 @@ void render(struct Game *game, enum PlayerAction your_action,
   }
 
   if (fabs(floor(game->ball_x) - game->settings.screen_width) < EPSILON) {
-    game->plr_one.score++;
-    game->ball_y = (float)((int)(game->settings.screen_height / 2));
+    ++game->plr_one.score;
+    game->ball_y = rand() % game->settings.screen_height;
     game->ball_x = (float)game->settings.screen_width / 2;
   } else if (game->ball_x <= EPSILON) {
-    game->plr_two.score++;
-    game->ball_y = (float)((int)(game->settings.screen_height / 2));
+    ++game->plr_two.score;
+    game->ball_y = rand() % game->settings.screen_height;
     game->ball_x = (float)game->settings.screen_width / 2;
   }
 
@@ -111,15 +85,15 @@ static void draw_player(struct Game *game, struct Player *player,
                         enum PlayerAction player_action, size_t offset_y,
                         size_t offset_x) {
   switch (player_action) {
-  case PAD_UP:
+  case PA_PAD_UP:
     if (player->y > 0)
       player->y--;
     break;
-  case PAD_DOWN:
+  case PA_PAD_DOWN:
     if (player->y + game->settings.pad_tiles < game->settings.screen_height)
       player->y++;
     break;
-  case NONE:
+  case PA_NONE:
   default:
     break;
   }
@@ -127,4 +101,32 @@ static void draw_player(struct Game *game, struct Player *player,
   for (uint8_t i = 0; i < game->settings.pad_tiles; i++)
     mvaddch(player->y + i + offset_y, player->x + offset_x,
             game->settings.pad_char);
+}
+
+static void draw_border(int y1, int x1, int y2, int x2) {
+  // Ensure top-left and bottom-right ordering
+  if (y1 > y2) {
+    int tmp = y1;
+    y1 = y2;
+    y2 = tmp;
+  }
+  if (x1 > x2) {
+    int tmp = x1;
+    x1 = x2;
+    x2 = tmp;
+  }
+
+  // Draw horizontal lines
+  mvhline(y1, x1, ACS_HLINE, x2 - x1 + 1);
+  mvhline(y2, x1, ACS_HLINE, x2 - x1 + 1);
+
+  // Draw vertical lines
+  mvvline(y1, x1, ACS_VLINE, y2 - y1 + 1);
+  mvvline(y1, x2, ACS_VLINE, y2 - y1 + 1);
+
+  // Draw corners
+  mvaddch(y1, x1, ACS_ULCORNER);
+  mvaddch(y1, x2, ACS_URCORNER);
+  mvaddch(y2, x1, ACS_LLCORNER);
+  mvaddch(y2, x2, ACS_LRCORNER);
 }

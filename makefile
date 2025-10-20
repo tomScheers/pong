@@ -1,7 +1,7 @@
 PROGRAM := pong
 CC := clang
-CFLAGS := -Wall -Wextra -O3 -std=c23
-LDFLAGS := -lncurses -lm
+CFLAGS := -Wall -Wextra -O3 -std=c23 -ggdb
+LDFLAGS := -lncurses -lm -fsanitize=address,undefined
 
 SRC := $(wildcard src/*.c)
 OBJ := $(patsubst src/%.c, build/%.o, $(SRC))
