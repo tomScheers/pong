@@ -3,10 +3,24 @@
 #include <inttypes.h>
 #include <math.h>
 #include <ncurses.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
 
-#define ISCOLLIDING(ball_x, ball_y, plr_x, plr_y)                              \
-  (fabs(floor(ball_x) - plr_x) < EPSILON && floor(ball_y) >= plr_y &&          \
+#define ISCOLLIDING(ball_x, ball_y, plr_x, plr_y, ball_size)                   \
+  ((fabs(floor(ball_x + ball_size - 1) - plr_x) < EPSILON ||                   \
+    fabs(floor(ball_x) - plr_x) < EPSILON) &&                                  \
+   floor(ball_y) >= plr_y &&                                                   \
    floor(ball_y) <= plr_y + game->settings.pad_tiles)
+
+static double get_char_ratio() {
+  struct winsize ws;
+  if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) == -1)
+    return 2.1;
+  if (ws.ws_col && ws.ws_xpixel && ws.ws_row && ws.ws_ypixel)
+    return ((double)ws.ws_ypixel / ws.ws_row) /
+           ((double)ws.ws_xpixel / ws.ws_col);
+  return 2.1;
+}
 
 static void draw_player(struct Game *game, struct Player *player,
                         enum PlayerAction player_action, size_t offset_y,
@@ -17,6 +31,8 @@ static void draw_border(int y1, int x1, int y2, int x2);
 void render(struct Game *game, enum PlayerAction your_action,
             enum PlayerAction opponent_action) {
   erase();
+
+  double char_ratio = get_char_ratio();
 
   size_t border_x1 = (COLS + game->settings.screen_width) / 2;
   size_t border_x2 = (COLS - game->settings.screen_width) / 2 - 1;
@@ -39,24 +55,39 @@ void render(struct Game *game, enum PlayerAction your_action,
   draw_player(game, &game->plr_one, your_action, y_offset, x_offset);
   draw_player(game, &game->plr_two, opponent_action, y_offset, x_offset);
 
-  mvaddch((int)game->ball_y + (LINES - game->settings.screen_height) / 2,
-          (int)game->ball_x + (COLS - game->settings.screen_width) / 2,
-          game->settings.ball_char);
+  for (int x = 0; x < game->settings.ball_size; ++x) {
+    for (int y = 0; y < ceil((float)game->settings.ball_size / char_ratio);
+         ++y) {
+      mvaddch((int)game->ball_y + (LINES - game->settings.screen_height) / 2 +
+                  y,
+              (int)game->ball_x + (COLS - game->settings.screen_width) / 2 + x,
+              game->settings.ball_char);
+    }
+  }
 
   draw_border(border_y1, border_x1, border_y2, border_x2);
 
   refresh();
 
-  if ((float)game->settings.screen_width - floor(game->ball_x) < EPSILON) {
+  if ((float)game->settings.screen_width -
+          floor(game->ball_x + game->settings.ball_size) <
+      EPSILON) {
     ++game->plr_one.score;
-    game->ball_y = rand() % game->settings.screen_height;
-    game->ball_x = (float)game->settings.screen_width / 2;
+    game->ball_y =
+        rand() % (game->settings.screen_height -
+                  (int)ceil(game->settings.ball_size / char_ratio) + 1);
+
+    game->ball_x =
+        (float)(game->settings.screen_width - game->settings.ball_size) / 2;
     game->x_ball_orientation = game->settings.base_ball_x_slope;
     game->y_ball_orientation = game->settings.base_ball_y_slope;
   } else if (game->ball_x <= EPSILON) {
     ++game->plr_two.score;
-    game->ball_y = rand() % game->settings.screen_height;
-    game->ball_x = (float)game->settings.screen_width / 2;
+    game->ball_y =
+        rand() % (game->settings.screen_height -
+                  (int)ceil(game->settings.ball_size / char_ratio) + 1);
+    game->ball_x =
+        (float)(game->settings.screen_width - game->settings.ball_size) / 2;
     game->x_ball_orientation = game->settings.base_ball_x_slope;
     game->y_ball_orientation = game->settings.base_ball_y_slope;
   }
@@ -88,13 +119,20 @@ void render(struct Game *game, enum PlayerAction your_action,
   float next_ball_y = game->ball_y + ball_dir_y;
   float next_ball_x = game->ball_x + ball_dir_x;
 
-  if (next_ball_y < 0 || next_ball_y >= game->settings.screen_height) {
+  if (next_ball_y < 0 ||
+      next_ball_y + ceil(game->settings.ball_size / char_ratio) >
+          game->settings.screen_height) {
     game->y_ball_orientation *= -SLOPE_Y_INCREASE_FACTOR;
   }
 
-  if (ISCOLLIDING(next_ball_x, next_ball_y, game->plr_one.x, game->plr_one.y) ||
-      ISCOLLIDING(next_ball_x, next_ball_y, game->plr_two.x, game->plr_two.y)) {
-    game->x_ball_orientation *= -SLOPE_X_INCREASE_FACTOR;
+  for (int y = 0; y < ceil((float)game->settings.ball_size / char_ratio); ++y) {
+    if (ISCOLLIDING(next_ball_x, next_ball_y + y, game->plr_one.x,
+                    game->plr_one.y, game->settings.ball_size) ||
+        ISCOLLIDING(next_ball_x, next_ball_y + y, game->plr_two.x,
+                    game->plr_two.y, game->settings.ball_size)) {
+      game->x_ball_orientation *= -SLOPE_X_INCREASE_FACTOR;
+      break;
+    }
   }
 
   if (ball_dir_x != 0) {

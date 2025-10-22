@@ -68,6 +68,8 @@ struct Settings {
   uint16_t screen_width;
   uint16_t screen_height;
 
+  uint16_t ball_size;
+
   int16_t base_ball_x_slope;
   int16_t base_ball_y_slope;
 

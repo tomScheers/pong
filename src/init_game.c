@@ -21,7 +21,7 @@ void set_game_fields(struct Game *game) {
   game->plr_one.score = 0;
   game->plr_two.score = 0;
 
-  game->ball_y = (float)((int)(game->settings.screen_height / 2));
+  game->ball_y = 0;
   game->ball_x = (float)game->settings.screen_width / 2;
   game->x_ball_orientation = game->settings.base_ball_x_slope;
   game->y_ball_orientation = game->settings.base_ball_y_slope;
@@ -45,6 +45,7 @@ struct Game *init_game(char **args, size_t argc) {
   game->settings.seed = (uint32_t)time(NULL);
   game->settings.base_ball_x_slope = DEFAULT_BALL_X_SLOPE;
   game->settings.base_ball_y_slope = DEFAULT_BALL_Y_SLOPE;
+  game->settings.ball_size = 3;
 
   for (int i = 0; i < 4; ++i)
     game->settings.ip_octets[i] = 0;
