@@ -3,9 +3,12 @@
 #include <ctype.h>
 #include <float.h>
 #include <inttypes.h>
+#include <math.h>
 #include <ncurses.h>
 #include <stdbool.h>
 #include <string.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
 
 #define IS_BACKSPACE(ch) (ch == KEY_BACKSPACE || ch == 127 || ch == '\b')
 
@@ -36,6 +39,16 @@ struct SettingBox {
   void *setting_value_ptr;
   enum SettingTypes setting_type;
 };
+
+static double get_char_ratio() {
+  struct winsize ws;
+  if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) == -1)
+    return 2.1;
+  if (ws.ws_col && ws.ws_xpixel && ws.ws_row && ws.ws_ypixel)
+    return ((double)ws.ws_ypixel / ws.ws_row) /
+           ((double)ws.ws_xpixel / ws.ws_col);
+  return 2.1;
+}
 
 static void change_settings(struct Game *game, struct SettingBox *settings,
                             int settings_count, const char *config_msg);
@@ -228,6 +241,18 @@ static void change_settings(struct Game *game, struct SettingBox *settings,
 
       if (game->settings.frames_per_second < 1)
         game->settings.frames_per_second = 1;
+
+      if (game->settings.ball_size < 1)
+        game->settings.ball_size = 1;
+
+      if (game->settings.ball_size > game->settings.screen_width ||
+          game->settings.ball_size >
+              game->settings.screen_height * get_char_ratio())
+        game->settings.ball_size =
+            game->settings.screen_width >
+                    game->settings.screen_height * get_char_ratio()
+                ? game->settings.screen_height * get_char_ratio()
+                : game->settings.screen_height;
 
       erase();
     } else if (IS_KEY_LEFT(ch) &&
