@@ -48,6 +48,7 @@ int main(int argc, char **argv) {
       send(sock, &game->settings, sizeof(game->settings), 0);
       recv(sock, &game->settings, sizeof(game->settings), 0);
       set_game_fields(game);
+      srand(game->settings.seed);
       net_game_handle(game, sock);
       close(sock);
     } else if (gamemode == GM_JOIN) {
@@ -75,6 +76,7 @@ int main(int argc, char **argv) {
       game->x_ball_orientation *= -1;
 
       send(sock, &game->settings, sizeof(game->settings), 0);
+      srand(game->settings.seed);
       net_game_handle(game, sock);
       close(sock);
     } else if (gamemode == GM_QUIT) {

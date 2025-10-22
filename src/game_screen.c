@@ -5,8 +5,8 @@
 #include <ncurses.h>
 
 #define ISCOLLIDING(ball_x, ball_y, plr_x, plr_y)                              \
-  (fabs(floor(ball_x) - plr_x) < EPSILON && (int)ball_y >= plr_y &&            \
-   (int)ball_y < plr_y + game->settings.pad_tiles)
+  (fabs(floor(ball_x) - plr_x) < EPSILON && floor(ball_y) >= plr_y &&          \
+   floor(ball_y) <= plr_y + game->settings.pad_tiles)
 
 static void draw_player(struct Game *game, struct Player *player,
                         enum PlayerAction player_action, size_t offset_y,
@@ -25,7 +25,7 @@ void render(struct Game *game, enum PlayerAction your_action,
 
   if (game->settings.screen_height < LINES - 16) {
     char score[16];
-    snprintf(score, sizeof(score), "%" PRIu16 "  %" PRIu16, game->plr_one.score,
+    snprintf(score, sizeof(score), "%" PRIu16 "/%" PRIu16, game->plr_one.score,
              game->plr_two.score);
     print_ascii(0, score);
   } else {
@@ -47,38 +47,66 @@ void render(struct Game *game, enum PlayerAction your_action,
 
   refresh();
 
-  if (game->speed_ticks !=
-      game->settings.frames_per_second / game->settings.ball_speed) {
-    game->speed_ticks++;
-    return;
-  }
-
-  if (fabs(floor(game->ball_x) - game->settings.screen_width) < EPSILON) {
+  if ((float)game->settings.screen_width - floor(game->ball_x) < EPSILON) {
     ++game->plr_one.score;
     game->ball_y = rand() % game->settings.screen_height;
     game->ball_x = (float)game->settings.screen_width / 2;
+    game->x_ball_orientation = game->settings.base_ball_x_slope;
+    game->y_ball_orientation = game->settings.base_ball_y_slope;
   } else if (game->ball_x <= EPSILON) {
     ++game->plr_two.score;
     game->ball_y = rand() % game->settings.screen_height;
     game->ball_x = (float)game->settings.screen_width / 2;
+    game->x_ball_orientation = game->settings.base_ball_x_slope;
+    game->y_ball_orientation = game->settings.base_ball_y_slope;
+  }
+
+  int8_t ball_dir_x = 0;
+  int8_t ball_dir_y = 0;
+
+  if ((float)game->ticks_y * fabs(game->y_ball_orientation) >=
+      (float)game->settings.frames_per_second) {
+    ball_dir_y = game->y_ball_orientation > 0 ? 1 : -1;
+    game->ticks_y = 0;
+  } else {
+    game->ticks_y++;
+  }
+
+  if ((float)game->ticks_x * fabs(game->x_ball_orientation) >=
+      (float)game->settings.frames_per_second) {
+    ball_dir_x = game->x_ball_orientation > 0 ? 1 : -1;
+    game->ticks_x = 0;
+  } else {
+    game->ticks_x++;
+  }
+
+  if (ball_dir_x == 0 && ball_dir_y == 0) {
+    return;
   }
 
   // Check if next hit is going to be collision and adjust orientation
-  float next_ball_y = game->ball_y + game->y_ball_orientation;
-  float next_ball_x = game->ball_x + game->x_ball_orientation;
+  float next_ball_y = game->ball_y + ball_dir_y;
+  float next_ball_x = game->ball_x + ball_dir_x;
 
-  if (next_ball_y <= 0 || next_ball_y >= game->settings.screen_height) {
-    game->y_ball_orientation *= -1;
+  if (next_ball_y < 0 || next_ball_y >= game->settings.screen_height) {
+    game->y_ball_orientation *= -SLOPE_Y_INCREASE_FACTOR;
   }
 
   if (ISCOLLIDING(next_ball_x, next_ball_y, game->plr_one.x, game->plr_one.y) ||
       ISCOLLIDING(next_ball_x, next_ball_y, game->plr_two.x, game->plr_two.y)) {
-    game->x_ball_orientation *= -1;
+    game->x_ball_orientation *= -SLOPE_X_INCREASE_FACTOR;
   }
 
-  game->ball_x += game->x_ball_orientation;
-  game->ball_y += game->y_ball_orientation;
-  game->speed_ticks = 0;
+  if (ball_dir_x != 0) {
+    ball_dir_x = game->x_ball_orientation > 0 ? 1 : -1;
+  }
+
+  if (ball_dir_y != 0) {
+    ball_dir_y = game->y_ball_orientation > 0 ? 1 : -1;
+  }
+
+  game->ball_x += ball_dir_x;
+  game->ball_y += ball_dir_y;
 }
 
 static void draw_player(struct Game *game, struct Player *player,

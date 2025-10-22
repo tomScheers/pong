@@ -4,11 +4,13 @@
 #include <stdlib.h>
 #include <time.h>
 
+#include <time.h>
+#include <unistd.h>
+
 void offline_mode(struct Game *game) {
   while (game->running) {
-    char ch1 = 0, ch2 = 0;
-
     clock_t start = time(NULL);
+    char ch1 = 0, ch2 = 0;
 
     while (difftime(time(NULL), start) <
                1.0 / game->settings.frames_per_second &&
@@ -79,8 +81,9 @@ void offline_mode(struct Game *game) {
       }
     }
 
-    if (game->running)
+    if (game->running) {
       render(game, your_action, opponent_action);
-    napms(1000 / game->settings.frames_per_second);
+      napms(1000 / game->settings.frames_per_second);
+    }
   }
 }

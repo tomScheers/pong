@@ -1,6 +1,7 @@
 #include "render.h"
 
 #include <ctype.h>
+#include <float.h>
 #include <inttypes.h>
 #include <ncurses.h>
 #include <stdbool.h>
@@ -23,6 +24,8 @@
 enum SettingTypes {
   SETTING_UINT8,
   SETTING_UINT16,
+  SETTING_INT16,
+  //  SETTING_FLOAT,
   SETTING_IP4,
   SETTING_CHAR,
   SETTING_NULL,
@@ -55,10 +58,6 @@ void change_offline_settings(struct Game *game) {
                               "to reach for them to win the game",
        .setting_value_ptr = &game->settings.winning_score,
        .setting_type = SETTING_UINT16},
-      {.setting_str = "Ball Speed",
-       .setting_description = "Adjusts the speed at which the ball moves",
-       .setting_value_ptr = &game->settings.ball_speed,
-       .setting_type = SETTING_UINT8},
       {.setting_str = "FPS",
        .setting_description =
            "Adjusts at how many frames per second the game will run",
@@ -73,6 +72,16 @@ void change_offline_settings(struct Game *game) {
        .setting_description = "Dictates what char will be used for the pads",
        .setting_value_ptr = &game->settings.pad_char,
        .setting_type = SETTING_CHAR},
+      {.setting_str = "Ball X Slope",
+       .setting_description =
+           "The speed at which the ball moves over the X-axis",
+       .setting_value_ptr = &game->settings.base_ball_x_slope,
+       .setting_type = SETTING_INT16},
+      {.setting_str = "Ball Y Slope",
+       .setting_description =
+           "The speed at which the ball moves over the Y-axis",
+       .setting_value_ptr = &game->settings.base_ball_y_slope,
+       .setting_type = SETTING_INT16},
       {.setting_str = "Ball Char",
        .setting_description = "Dictates what char will be used for the ball",
        .setting_value_ptr = &game->settings.ball_char,
@@ -102,10 +111,6 @@ void change_serve_settings(struct Game *game) {
                               "to reach for them to win the game",
        .setting_value_ptr = &game->settings.winning_score,
        .setting_type = SETTING_UINT16},
-      {.setting_str = "Ball Speed",
-       .setting_description = "Adjusts the speed at which the ball moves",
-       .setting_value_ptr = &game->settings.ball_speed,
-       .setting_type = SETTING_UINT8},
       {.setting_str = "FPS",
        .setting_description =
            "Adjusts at how many frames per second the game will run",
@@ -120,6 +125,16 @@ void change_serve_settings(struct Game *game) {
        .setting_description = "Dictates what char will be used for the pads",
        .setting_value_ptr = &game->settings.pad_char,
        .setting_type = SETTING_CHAR},
+      {.setting_str = "Ball X Slope",
+       .setting_description =
+           "The speed at which the ball moves over the X-axis",
+       .setting_value_ptr = &game->settings.base_ball_x_slope,
+       .setting_type = SETTING_INT16},
+      {.setting_str = "Ball Y Slope",
+       .setting_description =
+           "The speed at which the ball moves over the Y-axis",
+       .setting_value_ptr = &game->settings.base_ball_y_slope,
+       .setting_type = SETTING_INT16},
       {.setting_str = "Ball Char",
        .setting_description = "Dictates what char will be used for the ball",
        .setting_value_ptr = &game->settings.ball_char,
@@ -194,9 +209,6 @@ static void change_settings(struct Game *game, struct SettingBox *settings,
       if (game->settings.screen_height < MIN_SCREEN_HEIGHT)
         game->settings.screen_height = MIN_SCREEN_HEIGHT;
 
-      if (game->settings.ball_speed < 1)
-        game->settings.ball_speed = 1;
-
       if (game->settings.pad_tiles > game->settings.screen_height)
         game->settings.pad_tiles = game->settings.screen_height;
 
@@ -205,9 +217,6 @@ static void change_settings(struct Game *game, struct SettingBox *settings,
 
       if (game->settings.frames_per_second < 1)
         game->settings.frames_per_second = 1;
-
-      if (game->settings.ball_speed > game->settings.frames_per_second)
-        game->settings.ball_speed = game->settings.frames_per_second;
 
       erase();
     } else if (IS_KEY_LEFT(ch) &&
@@ -238,6 +247,46 @@ static void change_settings(struct Game *game, struct SettingBox *settings,
         PARSE_DIGIT(uint8_t, UINT8_MAX);
       } else if (settings[selected].setting_type == SETTING_UINT16) {
         PARSE_DIGIT(uint16_t, UINT16_MAX);
+      }
+      //      } else if (settings[selected].setting_type == SETTING_FLOAT) {
+      //        double value = *(float
+      //        *)(settings[selected].setting_value_ptr); if
+      //        (IS_BACKSPACE(ch)) {
+      //          value /= 10;
+      //        } else if (isdigit(ch)) {
+      //          value = value * 10 + (ch - '0');
+      //
+      //          if (value > FLT_MAX)
+      //            value = FLT_MAX;
+      //        } else if (ch == ',') {
+      //          if (fmodf(value, 1.0) == 0)
+      //            return;
+      //
+      //          value += value + 0.0;
+      //        }
+      //
+      //        *(uint8_t *)(settings[selected].setting_value_ptr +
+      //        selected_octet) =
+      //            (uint8_t)value;
+      //
+      //        erase();
+      else if (settings[selected].setting_type == SETTING_INT16) {
+        int32_t value =
+            *(int16_t *)(settings[selected].setting_value_ptr + selected_octet);
+        if (IS_BACKSPACE(ch)) {
+          value /= 10;
+        } else if (isdigit(ch)) {
+          value = value * 10 + (ch - '0');
+
+          if (value > UINT8_MAX)
+            value = UINT8_MAX;
+        } else if (ch == '-') {
+          value *= -1;
+        }
+
+        *(int16_t *)(settings[selected].setting_value_ptr) = (int16_t)value;
+
+        erase();
       } else if (settings[selected].setting_type == SETTING_IP4) {
         int16_t value =
             *(uint8_t *)(settings[selected].setting_value_ptr + selected_octet);
@@ -291,9 +340,15 @@ static void change_settings(struct Game *game, struct SettingBox *settings,
       else if (settings[i].setting_type == SETTING_UINT8)
         mvprintw(setting_y, setting_value_x, "%" PRIu8,
                  *(uint8_t *)settings[i].setting_value_ptr);
+      else if (settings[i].setting_type == SETTING_INT16)
+        mvprintw(setting_y, setting_value_x, "%" PRIi16,
+                 *(int16_t *)settings[i].setting_value_ptr);
       else if (settings[i].setting_type == SETTING_CHAR)
         mvprintw(setting_y, setting_value_x, "%c",
                  *(char *)settings[i].setting_value_ptr);
+      //      else if (settings[i].setting_type == SETTING_FLOAT)
+      //        mvprintw(setting_y, setting_value_x, "%f",
+      //                 *(float *)settings[i].setting_value_ptr);
       else if (settings[i].setting_type == SETTING_IP4) {
         for (int j = 0; j < 4; ++j) {
           if (j == selected_octet && i == selected && is_editing)

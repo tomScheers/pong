@@ -14,6 +14,8 @@
 #define DEFAULT_FPS 60
 #define DEFAULT_PAD_TILES 3
 #define DEFAULT_PORT_NUM 6767
+#define DEFAULT_BALL_X_SLOPE -15
+#define DEFAULT_BALL_Y_SLOPE -7
 
 #define IS_KEY_UP(ch) (ch == 'k' || ch == KEY_UP)
 #define IS_KEY_LEFT(ch) (ch == 'h' || ch == KEY_LEFT)
@@ -27,6 +29,9 @@
 #define MIN_SCREEN_WIDTH 5
 #define MAX_SCREEN_HEIGHT LINES - 6
 #define MAX_SCREEN_WIDTH COLS - 2
+
+#define SLOPE_Y_INCREASE_FACTOR 1.05
+#define SLOPE_X_INCREASE_FACTOR 1.25
 
 #define ASCII_LINE_HEIGHT 8
 
@@ -53,6 +58,8 @@ enum PauseOptions {
 };
 
 struct Settings {
+  uint32_t seed;
+
   /*
    * screen_width and screen_height dictate the screen's dimensions.
    * screen_width can't be larger than COLS, or be smaller than 3.
@@ -60,6 +67,9 @@ struct Settings {
    */
   uint16_t screen_width;
   uint16_t screen_height;
+
+  int16_t base_ball_x_slope;
+  int16_t base_ball_y_slope;
 
   /*
    * port represents the port number the current program is using
@@ -92,7 +102,7 @@ struct Settings {
    * The ball_speed is capped to the FPS of the program, which naturally is
    * capped towards the network speed.
    */
-  uint8_t ball_speed;
+  //  uint8_t ball_speed;
 
   /*
    * frames_per_second is the FPS the program will target for.
@@ -143,7 +153,8 @@ struct Game {
   float y_ball_orientation;
   float ball_x;
   float ball_y;
-  uint8_t speed_ticks;
+  uint16_t ticks_y;
+  uint16_t ticks_x;
   bool running;
 };
 

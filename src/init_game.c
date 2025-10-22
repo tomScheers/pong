@@ -3,13 +3,15 @@
 #include <ncurses.h>
 #include <stdbool.h>
 #include <string.h>
+#include <time.h>
 
 static bool parse_args(struct Game *game, char **args, size_t argc);
 static inline bool is_flag(char *given_flag, char *expected_flag);
 
 void set_game_fields(struct Game *game) {
   game->running = true;
-  game->speed_ticks = 0;
+  game->ticks_x = 0;
+  game->ticks_y = 0;
 
   game->plr_one.x = 0;
   game->plr_one.y = game->settings.screen_height / 2;
@@ -21,8 +23,8 @@ void set_game_fields(struct Game *game) {
 
   game->ball_y = (float)((int)(game->settings.screen_height / 2));
   game->ball_x = (float)game->settings.screen_width / 2;
-  game->x_ball_orientation = -1;
-  game->y_ball_orientation = -0.5;
+  game->x_ball_orientation = game->settings.base_ball_x_slope;
+  game->y_ball_orientation = game->settings.base_ball_y_slope;
 }
 
 struct Game *init_game(char **args, size_t argc) {
@@ -35,12 +37,14 @@ struct Game *init_game(char **args, size_t argc) {
 
   game->settings.ball_char = DEFAULT_BALL_CHAR;
   game->settings.pad_char = DEFAULT_PAD_CHAR;
-  game->settings.ball_speed = DEFAULT_BALL_SPEED;
   game->settings.frames_per_second = DEFAULT_FPS;
   game->settings.pad_tiles = DEFAULT_PAD_TILES;
   game->settings.program_version = PROGRAM_VERSION;
   game->settings.winning_score = DEFAULT_WINNING_SCORE;
   game->settings.port = DEFAULT_PORT_NUM;
+  game->settings.seed = (uint32_t)time(NULL);
+  game->settings.base_ball_x_slope = DEFAULT_BALL_X_SLOPE;
+  game->settings.base_ball_y_slope = DEFAULT_BALL_Y_SLOPE;
 
   for (int i = 0; i < 4; ++i)
     game->settings.ip_octets[i] = 0;
@@ -90,13 +94,6 @@ static bool parse_args(struct Game *game, char **args, size_t argc) {
     } else if (is_flag(args[i], "-pc") || is_flag(args[i], "--pad-char")) {
       if (i + 1 < argc) {
         game->settings.pad_char = args[++i][0];
-      } else {
-        fprintf(stderr, "invalid argument\n");
-        return false;
-      }
-    } else if (is_flag(args[i], "-bs") || is_flag(args[i], "--ball-speed")) {
-      if (i + 1 < argc) {
-        game->settings.ball_speed = atoi(args[++i]);
       } else {
         fprintf(stderr, "invalid argument\n");
         return false;
