@@ -39,7 +39,6 @@ enum Gamemode {
   GM_SERVE,
   GM_JOIN,
   GM_OFFLINE,
-  GM_BOT, // NOT IMPLEMENTED YET
   GM_QUIT,
 };
 

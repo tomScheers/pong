@@ -5,7 +5,7 @@ void end_game(struct Game *game, enum Gamemode mode) {
   erase();
   game->running = false;
 
-  if (mode == GM_SERVE || mode == GM_JOIN || mode == GM_BOT) {
+  if (mode == GM_SERVE || mode == GM_JOIN) {
     if (game->plr_one.score == game->settings.winning_score) {
       mvprintw(LINES / 2, COLS / 2, "YOU WON!");
     } else {
