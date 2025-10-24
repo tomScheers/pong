@@ -71,6 +71,8 @@ void offline_mode(struct Game *game) {
       switch (option) {
       case PO_QUIT:
         game->running = false;
+        endwin();
+        free(game);
         exit(0);
       case PO_HOME:
         game->running = false;

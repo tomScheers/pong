@@ -10,6 +10,9 @@
 #include "net.h"
 #include "render.h"
 
+#define MIN_WINDOW_HEIGHT 25
+#define MIN_WINDOW_WIDTH 25
+
 struct Setting {
   const char *setting;
   void *settings_field;
@@ -19,6 +22,12 @@ int main(int argc, char **argv) {
   struct Game *game = init_game(argv, argc);
   if (!game) {
     perror("init_game");
+    return EXIT_FAILURE;
+  }
+
+  if (COLS < MIN_WINDOW_WIDTH || LINES < MIN_WINDOW_HEIGHT) {
+    endwin();
+    free(game);
     return EXIT_FAILURE;
   }
 

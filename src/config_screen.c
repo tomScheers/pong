@@ -272,7 +272,8 @@ static void change_settings(struct Game *game, struct SettingBox *settings,
       }
     }
 
-    print_ascii(start_y / 2, config_msg);
+    if (LINES >= 49)
+      print_ascii(start_y / 2, config_msg);
 
     if (is_editing && ch != '\n' && ch != ERR) {
       if (settings[selected].setting_type == SETTING_CHAR) {
@@ -283,30 +284,7 @@ static void change_settings(struct Game *game, struct SettingBox *settings,
         PARSE_DIGIT(uint8_t, UINT8_MAX);
       } else if (settings[selected].setting_type == SETTING_UINT16) {
         PARSE_DIGIT(uint16_t, UINT16_MAX);
-      }
-      //      } else if (settings[selected].setting_type == SETTING_FLOAT) {
-      //        double value = *(float
-      //        *)(settings[selected].setting_value_ptr); if
-      //        (IS_BACKSPACE(ch)) {
-      //          value /= 10;
-      //        } else if (isdigit(ch)) {
-      //          value = value * 10 + (ch - '0');
-      //
-      //          if (value > FLT_MAX)
-      //            value = FLT_MAX;
-      //        } else if (ch == ',') {
-      //          if (fmodf(value, 1.0) == 0)
-      //            return;
-      //
-      //          value += value + 0.0;
-      //        }
-      //
-      //        *(uint8_t *)(settings[selected].setting_value_ptr +
-      //        selected_octet) =
-      //            (uint8_t)value;
-      //
-      //        erase();
-      else if (settings[selected].setting_type == SETTING_INT16) {
+      } else if (settings[selected].setting_type == SETTING_INT16) {
         int32_t value =
             *(int16_t *)(settings[selected].setting_value_ptr + selected_octet);
         if (IS_BACKSPACE(ch)) {

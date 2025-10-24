@@ -93,9 +93,9 @@ enum Gamemode loading_screen() {
 static void print_ascii_art() {
   static const char *pixel_art_text = "p0ng";
   // Get pixel_art variable
+
   uint16_t pixel_art_height = 8;
   uint16_t pixel_art_y = (LINES - pixel_art_height) / 2 - pixel_art_height;
-
   print_ascii(pixel_art_y, pixel_art_text);
 }
 
