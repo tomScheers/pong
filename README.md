@@ -1,10 +1,25 @@
 # Pong
+![Gameplay Demo](assets/example.gif)
+
 A terminal-based Pong implementation written in C using ncurses for rendering. The project supports local multiplayer, networked play, configurable game parameters, and has a basic menu-driven interface.
 
 ## Features
 - Local 1v1 on a singular keyboard
 - Online multiplay via a simple host/join model
 - Configurable gameplay parameters (screen size, winning score, etc)
+
+
+## Compilation
+First you should copy the repo to your local machine:
+```bash
+git clone https://github.com/tomScheers/pong
+cd pong
+```
+Then you can use make to compile and run the program:
+```bash
+make
+bin/pong
+```
 
 ## Gamemodes
 

@@ -7,7 +7,9 @@ SRC := $(wildcard src/*.c)
 OBJ := $(patsubst src/%.c, build/%.o, $(SRC))
 BIN := bin/$(PROGRAM)
 
-all: format
+all: $(BIN)
+
+dev: format
 	bear -- make $(BIN)
 
 # Main program
@@ -26,7 +28,7 @@ bin:
 
 # Extra
 clean:
-	rm -rf build bin compile_commands.json test_build
+	rm -rf build bin compile_commands.json
 
 format:
 	@find src/ -iname "*.h" -o -iname "*.c" | xargs clang-format -i
