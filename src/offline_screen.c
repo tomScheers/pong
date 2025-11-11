@@ -62,7 +62,9 @@ void offline_mode(struct Game *game) {
       break;
     }
 
-    if (your_action == PA_QUIT_GAME || opponent_action == PA_QUIT_GAME) {
+    if (your_action == PA_QUIT_GAME || opponent_action == PA_QUIT_GAME ||
+        game->plr_one.score >= game->settings.winning_score ||
+        game->plr_two.score >= game->settings.winning_score) {
       game->running = false;
       break;
     } else if (your_action == PA_PAUSE_GAME ||

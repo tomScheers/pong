@@ -2,11 +2,7 @@
 
 #include <ncurses.h>
 #include <stdbool.h>
-#include <string.h>
 #include <time.h>
-
-static bool parse_args(struct Game *game, char **args, size_t argc);
-static inline bool is_flag(char *given_flag, char *expected_flag);
 
 void set_game_fields(struct Game *game) {
   game->running = true;
@@ -27,12 +23,9 @@ void set_game_fields(struct Game *game) {
   game->y_ball_orientation = game->settings.base_ball_y_slope;
 }
 
-struct Game *init_game(char **args, size_t argc) {
+struct Game *init_game() {
   struct Game *game = malloc(sizeof(struct Game));
   if (!game)
-    return NULL;
-
-  if (!parse_args(game, args, argc))
     return NULL;
 
   game->settings.ball_char = DEFAULT_BALL_CHAR;
@@ -57,8 +50,12 @@ struct Game *init_game(char **args, size_t argc) {
   noecho();
   curs_set(0);
 
-  game->settings.screen_height = MAX_SCREEN_HEIGHT;
-  game->settings.screen_width = MAX_SCREEN_WIDTH;
+  game->settings.screen_height = PREFERED_SCREEN_HEIGHT > MAX_SCREEN_HEIGHT
+                                     ? MAX_SCREEN_HEIGHT
+                                     : PREFERED_SCREEN_HEIGHT;
+  game->settings.screen_width = PREFERED_SCREEN_WIDTH > MAX_SCREEN_WIDTH
+                                    ? MAX_SCREEN_WIDTH
+                                    : PREFERED_SCREEN_WIDTH;
 
   set_game_fields(game);
 
@@ -67,75 +64,4 @@ struct Game *init_game(char **args, size_t argc) {
   bkgd(COLOR_PAIR(1));
 
   return game;
-}
-
-static bool parse_args(struct Game *game, char **args, size_t argc) {
-  for (uint16_t i = 1; i < argc; ++i) {
-    if (is_flag(args[i], "-h") || is_flag(args[i], "--height")) {
-      if (i + 1 < argc) {
-        game->settings.screen_height = atoi(args[++i]);
-      } else {
-        fprintf(stderr, "invalid argument\n");
-        return false;
-      }
-    } else if (is_flag(args[i], "-w") || is_flag(args[i], "--width")) {
-      if (i + 1 < argc) {
-        game->settings.screen_width = atoi(args[++i]);
-      } else {
-        fprintf(stderr, "invalid argument\n");
-        return false;
-      }
-    } else if (is_flag(args[i], "-bc") || is_flag(args[i], "--ball-char")) {
-      if (i + 1 < argc) {
-        game->settings.ball_char = args[++i][0];
-      } else {
-        fprintf(stderr, "invalid argument\n");
-        return false;
-      }
-    } else if (is_flag(args[i], "-pc") || is_flag(args[i], "--pad-char")) {
-      if (i + 1 < argc) {
-        game->settings.pad_char = args[++i][0];
-      } else {
-        fprintf(stderr, "invalid argument\n");
-        return false;
-      }
-    } else if (is_flag(args[i], "-fps") ||
-               is_flag(args[i], "--frames-per-second")) {
-      if (i + 1 < argc) {
-        game->settings.frames_per_second = atoi(args[++i]);
-      } else {
-        fprintf(stderr, "invalid argument\n");
-        return false;
-      }
-    } else if (is_flag(args[i], "-pt") || is_flag(args[i], "--pad-tiles")) {
-      if (i + 1 < argc) {
-        game->settings.pad_tiles = args[++i][0];
-      } else {
-        fprintf(stderr, "invalid argument\n");
-        return false;
-      }
-    } else if (is_flag(args[i], "-ws") || is_flag(args[i], "--winning-score")) {
-      if (i + 1 < argc) {
-        game->settings.pad_tiles = args[++i][0];
-      } else {
-        fprintf(stderr, "invalid argument\n");
-        return false;
-      }
-    } else if (is_flag(args[i], "-p") || is_flag(args[i], "--port")) {
-      if (i + 1 < argc) {
-        game->settings.port = atoi(args[++i]);
-      } else {
-        fprintf(stderr, "invalid argument\n");
-        return false;
-      }
-    } else {
-      fprintf(stderr, "Invalid argument: %s\n", args[i]);
-      return false;
-    }
-  }
-  return true;
-}
-
-static inline bool is_flag(char *given_flag, char *expected_flag) {
-  return strcmp(given_flag, expected_flag) == 0;
 }

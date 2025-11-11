@@ -3,7 +3,6 @@
 #include <ctype.h>
 #include <float.h>
 #include <inttypes.h>
-#include <math.h>
 #include <ncurses.h>
 #include <stdbool.h>
 #include <string.h>

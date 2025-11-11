@@ -29,6 +29,8 @@
 #define MIN_SCREEN_WIDTH 5
 #define MAX_SCREEN_HEIGHT LINES - 6
 #define MAX_SCREEN_WIDTH COLS - 2
+#define PREFERED_SCREEN_HEIGHT 30
+#define PREFERED_SCREEN_WIDTH 150
 
 #define SLOPE_Y_INCREASE_FACTOR 1.05
 #define SLOPE_X_INCREASE_FACTOR 1.25
@@ -54,6 +56,12 @@ enum PauseOptions {
   PO_HOME,
   PO_RESUME,
   PO_QUIT,
+};
+
+enum EndScreenOption {
+  ES_RESTART,
+  ES_HOME,
+  ES_QUIT,
 };
 
 struct Settings {
@@ -159,7 +167,7 @@ struct Game {
   bool running;
 };
 
-struct Game *init_game(char **args, size_t argc);
+struct Game *init_game();
 void render(struct Game *game, enum PlayerAction your_action,
             enum PlayerAction opponent_action);
 enum Gamemode loading_screen();
@@ -175,5 +183,6 @@ size_t get_ascii_char_len(char ch);
 enum PauseOptions pause_screen();
 enum PauseOptions pause_screen_net(int sock);
 void offline_mode(struct Game *game);
+enum EndScreenOption end_screen();
 
 #endif

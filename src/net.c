@@ -46,7 +46,9 @@ void net_game_handle(struct Game *game, int sock) {
       goto cleanup;
     }
 
-    if (rec_data->action == PA_QUIT_GAME || data->action == PA_QUIT_GAME) {
+    if (rec_data->action == PA_QUIT_GAME || data->action == PA_QUIT_GAME ||
+        game->plr_one.score >= game->settings.winning_score ||
+        game->plr_two.score >= game->settings.winning_score) {
       game->running = false;
     } else if (rec_data->action == PA_PAUSE_GAME ||
                data->action == PA_PAUSE_GAME) {
@@ -54,7 +56,7 @@ void net_game_handle(struct Game *game, int sock) {
       enum PauseOptions rec_opt;
 
       if (send(sock, &option, sizeof(option), 0) == -1) {
-        perror("net_send_msg");
+        perror("send");
         goto cleanup;
       }
 
@@ -62,20 +64,20 @@ void net_game_handle(struct Game *game, int sock) {
       case PO_QUIT:
         game->running = false;
         if (send(sock, &option, sizeof(option), 0) == -1) {
-          perror("net_send_msg");
+          perror("send");
           goto cleanup;
         }
         break;
       case PO_HOME:
         game->running = false;
         if (send(sock, &option, sizeof(option), 0) == -1) {
-          perror("net_send_msg");
+          perror("send");
           goto cleanup;
         }
         break;
       case PO_RESUME:
         if (recv(sock, &rec_opt, sizeof(rec_opt), 0) == -1) {
-          perror("net_recv_msg");
+          perror("recv");
           goto cleanup;
         }
         if (rec_opt == PO_QUIT || rec_opt == PO_HOME)
